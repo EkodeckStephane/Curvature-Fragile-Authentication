@@ -24,6 +24,7 @@ from src.blind_v2 import (
     master_key_from_seed,
     qim_embed_scalar,
     qim_extract_bit,
+    random_p_orthonormal_basis,
     serialize_features,
     to_luminance,
     trim_to_block_grid,
@@ -126,6 +127,15 @@ class BlindV2Tests(unittest.TestCase):
             self.coefficients, "random", self.keys, (1, 2)
         ).basis
         np.testing.assert_allclose(first, second)
+
+    def test_random_basis_cache_returns_independent_arrays(self) -> None:
+        canonical = canonicalize_coefficients(self.coefficients)
+        _, cost, _ = fisher_cost_matrices(canonical)
+        first = random_p_orthonormal_basis(cost, self.keys.perm, (3, 4))
+        first[0, 0] = 12345.0
+        second = random_p_orthonormal_basis(cost, self.keys.perm, (3, 4))
+        self.assertNotEqual(second[0, 0], 12345.0)
+        np.testing.assert_allclose(second.T @ cost @ second, np.eye(8), atol=1e-10)
 
     def test_diagonal_fisher_basis_solves_generalized_problem(self) -> None:
         for mode in ("fisher", "smallest", "identity_cost"):

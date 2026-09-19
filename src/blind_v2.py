@@ -105,6 +105,7 @@ def idct2(coefficients: np.ndarray) -> np.ndarray:
     return transform.T @ value @ transform
 
 
+@lru_cache(maxsize=None)
 def model_coordinates(size: int = BLOCK_SIZE) -> tuple[tuple[int, int], ...]:
     reserved = set(RESERVED_COORDS)
     coords: list[tuple[int, int]] = []
@@ -168,11 +169,15 @@ def fisher_cost_matrices(canonical: np.ndarray) -> tuple[np.ndarray, np.ndarray,
 
     energies = band_energies(canonical)
     fisher = np.diag(1.0 / energies)
-    costs = [
+    return fisher, np.diag(reserved_frequency_cost_diagonal()), energies
+
+
+@lru_cache(maxsize=1)
+def reserved_frequency_cost_diagonal() -> tuple[float, ...]:
+    return tuple(
         1.0 + FREQUENCY_COST_SLOPE * float(row * row + col * col)
         for row, col in RESERVED_COORDS
-    ]
-    return fisher, np.diag(costs), energies
+    )
 
 
 def derive_keys(master_key: bytes) -> V2Keys:
@@ -270,7 +275,24 @@ def fixed_basis(cost: np.ndarray) -> np.ndarray:
 def random_p_orthonormal_basis(
     cost: np.ndarray, key: bytes, block_index: tuple[int, int]
 ) -> np.ndarray:
-    seed = _seed_from_hmac(key, b"random-basis", block_index, -1)
+    cost_diagonal = tuple(float(value) for value in np.diag(np.asarray(cost, dtype=np.float64)))
+    return _cached_random_p_orthonormal_basis(
+        cost_diagonal,
+        key,
+        int(block_index[0]),
+        int(block_index[1]),
+    ).copy()
+
+
+@lru_cache(maxsize=65536)
+def _cached_random_p_orthonormal_basis(
+    cost_diagonal: tuple[float, ...],
+    key: bytes,
+    block_row: int,
+    block_col: int,
+) -> np.ndarray:
+    cost = np.diag(np.asarray(cost_diagonal, dtype=np.float64))
+    seed = _seed_from_hmac(key, b"random-basis", (block_row, block_col), -1)
     rng = np.random.default_rng(seed)
     raw = rng.normal(size=cost.shape)
     q, r = np.linalg.qr(raw)
