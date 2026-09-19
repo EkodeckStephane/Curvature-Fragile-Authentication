@@ -86,6 +86,34 @@ def collect_image_paths(root: Path, max_images_per_subcorpus: int) -> dict[str, 
     return selected
 
 
+def collect_image_splits(
+    root: Path,
+    calibration_images_per_subcorpus: int,
+    evaluation_images_per_subcorpus: int,
+) -> tuple[dict[str, list[Path]], dict[str, list[Path]]]:
+    if calibration_images_per_subcorpus <= 0:
+        raise ValueError("calibration_images_per_subcorpus must be positive")
+    if evaluation_images_per_subcorpus <= 0:
+        raise ValueError("evaluation_images_per_subcorpus must be positive")
+
+    needed = calibration_images_per_subcorpus + evaluation_images_per_subcorpus
+    available = collect_image_paths(root, max_images_per_subcorpus=needed)
+    calibration: dict[str, list[Path]] = {}
+    evaluation: dict[str, list[Path]] = {}
+    for subcorpus, paths in available.items():
+        if len(paths) < needed:
+            raise ValueError(
+                f"{subcorpus} contains {len(paths)} images but {needed} are required "
+                "for separated calibration/evaluation splits"
+            )
+        calibration[subcorpus] = paths[:calibration_images_per_subcorpus]
+        evaluation[subcorpus] = paths[
+            calibration_images_per_subcorpus:
+            calibration_images_per_subcorpus + evaluation_images_per_subcorpus
+        ]
+    return calibration, evaluation
+
+
 def load_corpus_images(
     root: Path,
     max_images_per_subcorpus: int,
@@ -109,6 +137,48 @@ def load_corpus_images(
                 )
             )
     return items
+
+
+def load_corpus_images_from_selection(
+    root: Path,
+    selection: dict[str, list[Path]],
+    hash_files: bool = False,
+) -> list[CorpusImage]:
+    items: list[CorpusImage] = []
+    for subcorpus, paths in selection.items():
+        for path in paths:
+            with Image.open(path) as image:
+                luminance = np.asarray(image.convert("L"), dtype=np.float64)
+            trimmed = trim_to_block_grid(luminance)
+            items.append(
+                CorpusImage(
+                    subcorpus=subcorpus,
+                    relative_path=path.relative_to(root).as_posix(),
+                    path=path,
+                    array=trimmed,
+                    original_shape=tuple(int(value) for value in luminance.shape),
+                    trimmed_shape=tuple(int(value) for value in trimmed.shape),
+                    sha256=sha256_file(path) if hash_files else None,
+                )
+            )
+    return items
+
+
+def load_corpus_image_splits(
+    root: Path,
+    calibration_images_per_subcorpus: int,
+    evaluation_images_per_subcorpus: int,
+    hash_files: bool = False,
+) -> tuple[list[CorpusImage], list[CorpusImage]]:
+    calibration, evaluation = collect_image_splits(
+        root,
+        calibration_images_per_subcorpus=calibration_images_per_subcorpus,
+        evaluation_images_per_subcorpus=evaluation_images_per_subcorpus,
+    )
+    return (
+        load_corpus_images_from_selection(root, calibration, hash_files=hash_files),
+        load_corpus_images_from_selection(root, evaluation, hash_files=hash_files),
+    )
 
 
 def clean_threshold_curve(scores: np.ndarray) -> list[dict[str, float | int]]:
@@ -154,21 +224,61 @@ def attack_threshold_curve(
     return records
 
 
+def summarize_subcorpora(images: list[CorpusImage]) -> dict[str, dict[str, Any]]:
+    subcorpora: dict[str, dict[str, Any]] = {}
+    for item in images:
+        record = subcorpora.setdefault(
+            item.subcorpus,
+            {
+                "selectedImageCount": 0,
+                "trimmedShapes": {},
+            },
+        )
+        record["selectedImageCount"] += 1
+        shape_key = f"{item.trimmed_shape[0]}x{item.trimmed_shape[1]}"
+        record["trimmedShapes"][shape_key] = record["trimmedShapes"].get(shape_key, 0) + 1
+    return subcorpora
+
+
 def run(args: argparse.Namespace) -> dict[str, Any]:
     root = args.root.resolve()
-    images = load_corpus_images(
-        root,
-        max_images_per_subcorpus=args.max_images_per_subcorpus,
-        hash_files=args.hash_files,
+    split_requested = (
+        getattr(args, "calibration_images_per_subcorpus", None) is not None
+        or getattr(args, "evaluation_images_per_subcorpus", None) is not None
     )
-    arrays = [item.array for item in images]
+    if split_requested:
+        if (
+            getattr(args, "calibration_images_per_subcorpus", None) is None
+            or getattr(args, "evaluation_images_per_subcorpus", None) is None
+        ):
+            raise ValueError(
+                "calibration_images_per_subcorpus and evaluation_images_per_subcorpus "
+                "must be provided together"
+            )
+        calibration_images, evaluation_images = load_corpus_image_splits(
+            root,
+            calibration_images_per_subcorpus=args.calibration_images_per_subcorpus,
+            evaluation_images_per_subcorpus=args.evaluation_images_per_subcorpus,
+            hash_files=args.hash_files,
+        )
+        pilot_mode = "engineering_scratch_separated_calibration_evaluation"
+    else:
+        calibration_images = load_corpus_images(
+            root,
+            max_images_per_subcorpus=args.max_images_per_subcorpus,
+            hash_files=args.hash_files,
+        )
+        evaluation_images = calibration_images
+        pilot_mode = "engineering_scratch_same_images_for_calibration_and_attack"
+
+    calibration_arrays = [item.array for item in calibration_images]
     master_key = master_key_from_seed(args.master_key_seed)
     candidates = [float(value) for value in args.delta_embed_candidates]
     basis_modes = list(args.basis_modes)
     attacks = list(args.attacks)
 
     delta_embed, delta_records = calibrate_delta_embed(
-        arrays,
+        calibration_arrays,
         master_key,
         candidates,
         min_psnr_db=args.min_psnr_db,
@@ -178,22 +288,27 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
 
     baseline_records = []
     for mode in basis_modes:
-        embedded = [
+        calibration_embedded = [
             embed_image(item.array, master_key, delta_embed, basis_mode=mode)
-            for item in images
+            for item in calibration_images
         ]
-        watermarked_images = [item.watermarked for item in embedded]
+        calibration_watermarked_images = [item.watermarked for item in calibration_embedded]
         tau, validation_fpr, clean_scores = calibrate_tau_from_clean_images(
-            watermarked_images,
+            calibration_watermarked_images,
             master_key,
             delta_embed,
             alpha=args.target_false_positive_rate,
             basis_mode=mode,
         )
+        evaluation_embedded = [
+            embed_image(item.array, master_key, delta_embed, basis_mode=mode)
+            for item in evaluation_images
+        ]
 
         clean_records = []
-        for index, embedded_item in enumerate(embedded):
-            source_item = images[index]
+        evaluation_clean_score_items = []
+        for index, embedded_item in enumerate(evaluation_embedded):
+            source_item = evaluation_images[index]
             verified = verify_image(
                 embedded_item.watermarked,
                 master_key,
@@ -201,6 +316,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 tau=tau,
                 basis_mode=mode,
             )
+            evaluation_clean_score_items.append(verified.scores.ravel())
             clean_records.append(
                 {
                     "imageIndex": index,
@@ -221,8 +337,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         for attack in attacks:
             metric_items = []
             score_truth_pairs = []
-            for index, embedded_item in enumerate(embedded):
-                source = embedded[(index + 1) % len(embedded)].watermarked
+            for index, embedded_item in enumerate(evaluation_embedded):
+                source = evaluation_embedded[(index + 1) % len(evaluation_embedded)].watermarked
                 attacked, truth = apply_synthetic_attack(
                     embedded_item.watermarked,
                     attack,
@@ -238,8 +354,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 score_truth_pairs.append((verified.scores, truth))
                 metrics = block_metrics(verified.tamper_blocks, truth)
                 metrics["imageIndex"] = index
-                metrics["subcorpus"] = images[index].subcorpus
-                metrics["relativePath"] = images[index].relative_path
+                metrics["subcorpus"] = evaluation_images[index].subcorpus
+                metrics["relativePath"] = evaluation_images[index].relative_path
                 metrics["truthBlockCount"] = int(np.sum(truth))
                 metrics["predictedBlockCount"] = int(np.sum(verified.tamper_blocks))
                 metric_items.append(metrics)
@@ -263,7 +379,10 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 "cleanScoreHistogram": {
                     f"{k}/8": int(np.sum(clean_scores == k / 8.0)) for k in range(9)
                 },
-                "cleanThresholdCurve": clean_threshold_curve(clean_scores),
+                "calibrationCleanThresholdCurve": clean_threshold_curve(clean_scores),
+                "evaluationCleanThresholdCurve": clean_threshold_curve(
+                    np.concatenate(evaluation_clean_score_items)
+                ),
                 "clean": clean_records,
                 "attacks": attack_records,
                 "meanCleanPsnrDb": float(np.mean([item["psnrDb"] for item in clean_records])),
@@ -277,22 +396,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             }
         )
 
-    subcorpora = {}
-    for item in images:
-        record = subcorpora.setdefault(
-            item.subcorpus,
-            {
-                "selectedImageCount": 0,
-                "trimmedShapes": {},
-            },
-        )
-        record["selectedImageCount"] += 1
-        shape_key = f"{item.trimmed_shape[0]}x{item.trimmed_shape[1]}"
-        record["trimmedShapes"][shape_key] = record["trimmedShapes"].get(shape_key, 0) + 1
-
     summary = {
         "schema": "blind-v2-real-image-scratch-pilot/v1",
-        "pilotMode": "engineering_scratch_same_images_for_calibration_and_attack",
+        "pilotMode": pilot_mode,
         "promotionReady": False,
         "promotionBlocker": (
             "dataset source, version, license, citation, split, and preprocessing "
@@ -305,8 +411,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "python": platform.python_version(),
         "numpy": np.__version__,
         "pillow": Image.__version__,
-        "imageCount": len(images),
-        "subcorpora": subcorpora,
+        "imageCount": len(evaluation_images),
+        "calibrationImageCount": len(calibration_images),
+        "evaluationImageCount": len(evaluation_images),
+        "calibrationSubcorpora": summarize_subcorpora(calibration_images),
+        "evaluationSubcorpora": summarize_subcorpora(evaluation_images),
         "masterKeyId": key_id(master_key),
         "masterKeyStored": False,
         "calibrationBasisMode": args.calibration_basis_mode,
@@ -339,6 +448,8 @@ def parse_args() -> argparse.Namespace:
         default=ROOT / "results" / "_scratch" / "blind_v2_real_pilot.json",
     )
     parser.add_argument("--max-images-per-subcorpus", type=int, default=4)
+    parser.add_argument("--calibration-images-per-subcorpus", type=int)
+    parser.add_argument("--evaluation-images-per-subcorpus", type=int)
     parser.add_argument("--hash-files", action="store_true")
     parser.add_argument("--master-key-seed", type=int, default=20260920)
     parser.add_argument(

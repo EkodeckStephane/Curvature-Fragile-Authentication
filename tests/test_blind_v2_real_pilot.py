@@ -43,6 +43,21 @@ class BlindV2RealPilotTests(unittest.TestCase):
         self.assertEqual(list(selected), ["a", "b"])
         self.assertEqual([path.name for path in selected["b"]], ["1.png"])
 
+    def test_collect_image_splits_are_disjoint(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "sample").mkdir()
+            for index in range(3):
+                Image.new("L", (64, 64), index).save(root / "sample" / f"{index}.png")
+            calibration, evaluation = self.runner.collect_image_splits(
+                root,
+                calibration_images_per_subcorpus=1,
+                evaluation_images_per_subcorpus=2,
+            )
+
+        self.assertEqual([path.name for path in calibration["sample"]], ["0.png"])
+        self.assertEqual([path.name for path in evaluation["sample"]], ["1.png", "2.png"])
+
     def test_run_writes_private_scratch_manifest_without_key_or_pixels(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory) / "corpus"
@@ -54,6 +69,8 @@ class BlindV2RealPilotTests(unittest.TestCase):
                 root=root,
                 output=output,
                 max_images_per_subcorpus=2,
+                calibration_images_per_subcorpus=1,
+                evaluation_images_per_subcorpus=1,
                 hash_files=True,
                 master_key_seed=1234,
                 delta_embed_candidates=[2.0, 4.0],
@@ -68,12 +85,23 @@ class BlindV2RealPilotTests(unittest.TestCase):
             written = json.loads(output.read_text(encoding="utf-8"))
 
         self.assertEqual(summary["schema"], "blind-v2-real-image-scratch-pilot/v1")
+        self.assertEqual(
+            summary["pilotMode"],
+            "engineering_scratch_separated_calibration_evaluation",
+        )
         self.assertFalse(summary["promotionReady"])
         self.assertFalse(summary["masterKeyStored"])
         self.assertFalse(summary["dataCopied"])
-        self.assertEqual(written["imageCount"], 2)
+        self.assertEqual(written["calibrationImageCount"], 1)
+        self.assertEqual(written["evaluationImageCount"], 1)
+        self.assertEqual(written["imageCount"], 1)
         self.assertIn("sha256", written["baselines"][0]["clean"][0])
-        self.assertEqual(len(written["baselines"][0]["cleanThresholdCurve"]), 9)
+        self.assertEqual(
+            len(written["baselines"][0]["calibrationCleanThresholdCurve"]), 9
+        )
+        self.assertEqual(
+            len(written["baselines"][0]["evaluationCleanThresholdCurve"]), 9
+        )
         self.assertEqual(len(written["baselines"][0]["attacks"][0]["thresholdCurve"]), 9)
 
 

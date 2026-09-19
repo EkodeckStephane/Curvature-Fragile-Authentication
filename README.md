@@ -177,12 +177,13 @@ license, splits, and citation requirements are checked.
 ### Run a private real-image scratch pilot
 
 ```powershell
-python scripts/run_blind_v2_real_pilot.py --root path\to\image_corpus --output results\_scratch\blind_v2_real_pilot.json
+python scripts/run_blind_v2_real_pilot.py --root path\to\image_corpus --output results\_scratch\blind_v2_real_pilot.json --calibration-images-per-subcorpus 1 --evaluation-images-per-subcorpus 1
 ```
 
 This command exercises the V2 detector on local images and writes an ignored
-engineering manifest. The manifest is marked `promotionReady: false` until the
-dataset manifest is complete.
+engineering manifest. Delta and threshold calibration use the calibration
+split; clean and attack metrics use the evaluation split. The manifest is
+marked `promotionReady: false` until the dataset manifest is complete.
 
 ## Editorial target
 
