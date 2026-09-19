@@ -1,0 +1,131 @@
+{
+  "allAccepted": true,
+  "basisMode": "fisher",
+  "cleanScoreHistogram": {
+    "0/8": 64,
+    "1/8": 0,
+    "2/8": 0,
+    "3/8": 0,
+    "4/8": 0,
+    "5/8": 0,
+    "6/8": 0,
+    "7/8": 0,
+    "8/8": 0
+  },
+  "config": "configs/blind_v2_synthetic_image_gate.json",
+  "configSha256": "72fabdcd36887878c6a590ef21ffe81beff672e74797b8763512de9491e4610b",
+  "deltaCalibration": [
+    {
+      "accepted": true,
+      "deltaEmbed": 2.0,
+      "maxCleanBitErrorRate": 0.0,
+      "meanCleanBitErrorRate": 0.0,
+      "meanPsnrDb": 73.08623215989358,
+      "minPsnrDb": 72.82490513264737
+    },
+    {
+      "accepted": true,
+      "deltaEmbed": 4.0,
+      "maxCleanBitErrorRate": 0.0,
+      "meanCleanBitErrorRate": 0.0,
+      "meanPsnrDb": 66.97567120209813,
+      "minPsnrDb": 66.17485757721786
+    },
+    {
+      "accepted": true,
+      "deltaEmbed": 6.0,
+      "maxCleanBitErrorRate": 0.0,
+      "meanCleanBitErrorRate": 0.0,
+      "meanPsnrDb": 63.21480190494063,
+      "minPsnrDb": 62.68762628312598
+    },
+    {
+      "accepted": true,
+      "deltaEmbed": 8.0,
+      "maxCleanBitErrorRate": 0.0,
+      "meanCleanBitErrorRate": 0.0,
+      "meanPsnrDb": 60.865569584003424,
+      "minPsnrDb": 60.61346593884472
+    },
+    {
+      "accepted": true,
+      "deltaEmbed": 10.0,
+      "maxCleanBitErrorRate": 0.0,
+      "meanCleanBitErrorRate": 0.0,
+      "meanPsnrDb": 58.89541856873263,
+      "minPsnrDb": 58.59264864131231
+    },
+    {
+      "accepted": true,
+      "deltaEmbed": 12.0,
+      "maxCleanBitErrorRate": 0.0,
+      "meanCleanBitErrorRate": 0.0,
+      "meanPsnrDb": 57.356823064046424,
+      "minPsnrDb": 56.95528367341833
+    }
+  ],
+  "imageCount": 4,
+  "images": [
+    {
+      "blockCount": 16,
+      "cleanBitErrorRate": 0.0,
+      "flaggedBlockCount": 0,
+      "imageIndex": 0,
+      "maxBlockScore": 0.0,
+      "payloadBpp": 0.03125,
+      "psnrDb": 72.93827265102723,
+      "shape": [
+        64,
+        64
+      ]
+    },
+    {
+      "blockCount": 16,
+      "cleanBitErrorRate": 0.0,
+      "flaggedBlockCount": 0,
+      "imageIndex": 1,
+      "maxBlockScore": 0.0,
+      "payloadBpp": 0.03125,
+      "psnrDb": 73.73069968338426,
+      "shape": [
+        64,
+        64
+      ]
+    },
+    {
+      "blockCount": 16,
+      "cleanBitErrorRate": 0.0,
+      "flaggedBlockCount": 0,
+      "imageIndex": 2,
+      "maxBlockScore": 0.0,
+      "payloadBpp": 0.03125,
+      "psnrDb": 72.82490513264737,
+      "shape": [
+        64,
+        64
+      ]
+    },
+    {
+      "blockCount": 16,
+      "cleanBitErrorRate": 0.0,
+      "flaggedBlockCount": 0,
+      "imageIndex": 3,
+      "maxBlockScore": 0.0,
+      "payloadBpp": 0.03125,
+      "psnrDb": 72.85105117251548,
+      "shape": [
+        64,
+        64
+      ]
+    }
+  ],
+  "masterKeyId": "ea88cdbe3b6e95d5",
+  "masterKeyStored": false,
+  "numpy": "2.4.6",
+  "python": "3.11.9",
+  "schema": "blind-v2-synthetic-image-gate/v1",
+  "seed": 20260919,
+  "selectedDeltaEmbed": 2.0,
+  "selectedTau": 0.0,
+  "validationFalsePositiveRate": 0.0
+}

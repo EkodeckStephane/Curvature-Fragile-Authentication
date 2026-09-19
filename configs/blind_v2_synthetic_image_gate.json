@@ -1,0 +1,13 @@
+{
+  "schema": "blind-v2-synthetic-image-gate-config/v1",
+  "seed": 20260919,
+  "masterKeySeed": 2026091902,
+  "imageCount": 4,
+  "height": 64,
+  "width": 64,
+  "basisMode": "fisher",
+  "deltaEmbedCandidates": [2, 4, 6, 8, 10, 12],
+  "minPsnrDb": 40.0,
+  "maxCleanBitErrorRate": 0.01,
+  "targetFalsePositiveRate": 0.01
+}
