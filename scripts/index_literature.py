@@ -8,6 +8,17 @@ import hashlib
 import json
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Mapping
+
+
+FIELDNAMES = [
+    "file",
+    "bytes",
+    "sha256",
+    "identityStatus",
+    "readingStatus",
+    "notesFile",
+]
 
 
 def sha256_file(path: Path, chunk_size: int = 1024 * 1024) -> str:
@@ -18,19 +29,43 @@ def sha256_file(path: Path, chunk_size: int = 1024 * 1024) -> str:
     return digest.hexdigest()
 
 
-def inventory(input_root: Path) -> list[dict[str, str | int]]:
+def load_existing(
+    path: Path,
+) -> dict[tuple[str, str], dict[str, str]]:
+    """Load review metadata keyed by path and content hash.
+
+    Binding metadata to both values prevents a replaced PDF from inheriting the
+    verification status of the previous file at the same location.
+    """
+    if not path.is_file():
+        return {}
+    with path.open(encoding="utf-8", newline="") as stream:
+        rows = csv.DictReader(stream)
+        return {
+            (row["file"], row["sha256"]): row
+            for row in rows
+            if row.get("file") and row.get("sha256")
+        }
+
+
+def inventory(
+    input_root: Path,
+    existing: Mapping[tuple[str, str], Mapping[str, str]] | None = None,
+) -> list[dict[str, str | int]]:
+    existing = existing or {}
     rows: list[dict[str, str | int]] = []
     for path in sorted(input_root.rglob("*.pdf"), key=lambda item: str(item).lower()):
-        rows.append(
-            {
-                "file": path.relative_to(input_root).as_posix(),
-                "bytes": path.stat().st_size,
-                "sha256": sha256_file(path),
-                "identityStatus": "unverified",
-                "readingStatus": "not-read",
-                "notesFile": "",
-            }
-        )
+        relative_path = path.relative_to(input_root).as_posix()
+        digest = sha256_file(path)
+        previous = existing.get((relative_path, digest), {})
+        rows.append({
+            "file": relative_path,
+            "bytes": path.stat().st_size,
+            "sha256": digest,
+            "identityStatus": previous.get("identityStatus", "unverified"),
+            "readingStatus": previous.get("readingStatus", "not-read"),
+            "notesFile": previous.get("notesFile", ""),
+        })
     return rows
 
 
@@ -51,17 +86,10 @@ def main() -> int:
     if not input_root.is_dir():
         raise SystemExit(f"input directory not found: {input_root}")
     output.parent.mkdir(parents=True, exist_ok=True)
-    rows = inventory(input_root)
-    fieldnames = [
-        "file",
-        "bytes",
-        "sha256",
-        "identityStatus",
-        "readingStatus",
-        "notesFile",
-    ]
+    existing = load_existing(output)
+    rows = inventory(input_root, existing)
     with output.open("w", encoding="utf-8", newline="") as stream:
-        writer = csv.DictWriter(stream, fieldnames=fieldnames)
+        writer = csv.DictWriter(stream, fieldnames=FIELDNAMES)
         writer.writeheader()
         writer.writerows(rows)
 
@@ -71,7 +99,10 @@ def main() -> int:
         "pdfCount": len(rows),
         "inventoryFile": str(output),
         "inventorySha256": sha256_file(output),
-        "operation": "read-only inventory; source PDFs were not moved or renamed",
+        "operation": (
+            "source PDFs were not moved or renamed; review metadata was "
+            "preserved only for unchanged path-and-SHA-256 pairs"
+        ),
     }
     run_manifest.write_text(
         json.dumps(record, indent=2, ensure_ascii=False) + "\n",

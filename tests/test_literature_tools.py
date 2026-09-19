@@ -102,6 +102,30 @@ class LiteratureInventoryTests(unittest.TestCase):
         self.assertEqual(rows[0]["sha256"], expected_hash)
         self.assertEqual(rows[0]["identityStatus"], "unverified")
 
+    def test_inventory_preserves_metadata_only_for_unchanged_content(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            paper = root / "paper.pdf"
+            paper.write_bytes(b"first-version")
+            digest = self.indexer.sha256_file(paper)
+            existing = {
+                ("paper.pdf", digest): {
+                    "identityStatus": "first-page-verified",
+                    "readingStatus": "full-text-read",
+                    "notesFile": "notes/reading.md",
+                }
+            }
+            unchanged = self.indexer.inventory(root, existing)[0]
+            paper.write_bytes(b"replacement-version")
+            replaced = self.indexer.inventory(root, existing)[0]
+
+        self.assertEqual(unchanged["identityStatus"], "first-page-verified")
+        self.assertEqual(unchanged["readingStatus"], "full-text-read")
+        self.assertEqual(unchanged["notesFile"], "notes/reading.md")
+        self.assertEqual(replaced["identityStatus"], "unverified")
+        self.assertEqual(replaced["readingStatus"], "not-read")
+        self.assertEqual(replaced["notesFile"], "")
+
 
 if __name__ == "__main__":
     unittest.main()

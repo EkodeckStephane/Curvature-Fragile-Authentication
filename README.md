@@ -47,8 +47,14 @@ the metric. This distinction now constrains the method design and the wording of
 the future theorem. A reproducible Semantic Scholar discovery run produced 459
 unique literature candidates, including direct TIFS fragile-watermarking work
 and an earlier application of Fisher information to blind watermark design.
-These records are discovery evidence; manuscript citations require subsequent
-publisher/DOI verification and full-text reading.
+A priority corpus of 22 full texts has now been read, including ten TIFS
+articles and the foundational monograph *Methods of Information Geometry*.
+The review identified a direct 2001 precedent that optimizes blind-watermark
+synchronization patterns through Fisher information, and confirmed that the
+Gaussian location--scale manifold has constant Fisher--Rao curvature. These
+findings narrow the defensible contribution to a detector-linked geometric
+design rule with matched empirical validation. Manuscript citations still
+require final publisher-version and editorial-status checks.
 
 Empirical performance tables will appear here only after the corresponding
 commands, raw outputs, configurations, seeds, environment manifest, and hashes
@@ -108,7 +114,9 @@ Remove-Item Env:SEMANTIC_SCHOLAR_API_KEY
 
 The raw API records, downloaded papers, and reading notes remain local. The
 non-sensitive run summary and response hashes are published under
-`results/sota/`.
+`results/sota/`. Re-running the PDF inventory preserves review metadata only
+when both the relative path and SHA-256 are unchanged; a replaced file is reset
+to the unverified state.
 
 ### Verify the current source tools
 
