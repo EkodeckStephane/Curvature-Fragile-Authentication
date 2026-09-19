@@ -63,17 +63,19 @@ construction, HMAC authentication bits, dithered QIM, block scoring, threshold
 selection and matched basis ablations. Manuscript citations still require final
 publisher-version and editorial-status checks.
 
-Empirical performance tables will appear here only after the corresponding
-commands, raw outputs, configurations, seeds, environment manifest, and hashes
-are committed under `results/`.
+Public empirical tables are limited to experiments whose commands, raw outputs,
+configurations, seeds, environment details, and hashes are committed under
+`results/`. Real-image dataset pilots are promoted only after the corresponding
+source, version, license, split, and citation manifests are frozen.
 
 ## Conclusions
 
 The Fisher metric supplies a defensible local sensitivity objective, subject to
-an explicit perturbation-cost metric. A curvature-based authentication claim
+an explicit perturbation-cost metric. A curvature-based authentication result
 requires an additional geometric construction and evidence that it changes the
-blind watermarking design. The next milestone is the synthetic validation of
-the Fisher-sensitivity primitive before final detector coding.
+blind watermarking design. The current executable path is a detector-linked
+Fisher-sensitivity prototype, validated first on synthetic gates and prepared
+for a controlled real-image pilot after dataset provenance checks.
 
 ## Repository layout
 
@@ -144,13 +146,13 @@ random symmetric-positive-definite cases, then writes an auditable summary under
 
 ### Implemented blind-mapping primitives
 
-The current V2 prototype code is deliberately block-level. It exposes the
-audited pieces needed before a real-image pilot: orthonormal 16x16 DCT,
+The current V2 prototype exposes the audited pieces needed before a real-image
+pilot: orthonormal 16x16 DCT,
 canonical reserved-coefficient masking, diagonal Fisher/cost matrices,
 HMAC-SHA-256 authentication bits, dithered scalar QIM, block score extraction,
 threshold calibration, pixel-map expansion, and Fisher/random/fixed matched
-basis variants. Image-dataset pilots will be added only after dataset licenses,
-splits, attacks, and thresholds are frozen.
+basis variants. Image-dataset pilots are prepared behind dataset licenses,
+splits, attacks, and thresholds that are explicitly frozen before publication.
 
 ### Reproduce the synthetic image gate
 
@@ -162,6 +164,15 @@ The command generates deterministic synthetic luminance images, embeds and
 verifies the V2 blind detector, selects `Delta_embed`, calibrates `tau`, runs
 matched basis variants and block-aligned synthetic attacks, and writes a public
 manifest without storing the secret key.
+
+### Audit a local image corpus
+
+```powershell
+python scripts/audit_image_corpus.py --root path\to\image_corpus --output results\_scratch\image_corpus_audit.json
+```
+
+Dataset-derived summaries stay out of public results until source, version,
+license, splits, and citation requirements are checked.
 
 ## Editorial target
 
