@@ -1,0 +1,26 @@
+{
+  "seed": 20260919,
+  "tolerance": 1e-9,
+  "randomDirectionSamples": 2000,
+  "knownCases": [
+    {
+      "name": "diagonal_cost_weighted",
+      "fisher": [[8.0, 0.0], [0.0, 9.0]],
+      "cost": [[2.0, 0.0], [0.0, 9.0]],
+      "expectedPrincipalValue": 4.0,
+      "expectedPrincipalDirectionAbs": [0.7071067811865475, 0.0]
+    },
+    {
+      "name": "identity_cost_diagonal_fisher",
+      "fisher": [[5.0, 0.0], [0.0, 2.0]],
+      "cost": [[1.0, 0.0], [0.0, 1.0]],
+      "expectedPrincipalValue": 5.0,
+      "expectedPrincipalDirectionAbs": [1.0, 0.0]
+    }
+  ],
+  "randomCases": {
+    "count": 20,
+    "dimension": 6,
+    "ridge": 0.5
+  }
+}

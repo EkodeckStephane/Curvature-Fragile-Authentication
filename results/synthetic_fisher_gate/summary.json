@@ -1,0 +1,493 @@
+{
+  "acceptedCaseCount": 22,
+  "allAccepted": true,
+  "caseCount": 22,
+  "cases": [
+    {
+      "accepted": true,
+      "checks": {
+        "expectedPrincipalDirectionAbs": true,
+        "expectedPrincipalValue": true,
+        "pOrthonormalWithinTolerance": true,
+        "residualsWithinTolerance": true,
+        "sampledDirectionsBelowPrincipal": true
+      },
+      "dimension": 2,
+      "maxResidual": 8.881784197001252e-16,
+      "maxSampledRayleighExcess": 0.0,
+      "name": "diagonal_cost_weighted",
+      "pOrthonormalError": 2.220446049250313e-16,
+      "principalValue": 3.999999999999999,
+      "spectralValues": [
+        3.999999999999999,
+        1.0
+      ]
+    },
+    {
+      "accepted": true,
+      "checks": {
+        "expectedPrincipalDirectionAbs": true,
+        "expectedPrincipalValue": true,
+        "pOrthonormalWithinTolerance": true,
+        "residualsWithinTolerance": true,
+        "sampledDirectionsBelowPrincipal": true
+      },
+      "dimension": 2,
+      "maxResidual": 0.0,
+      "maxSampledRayleighExcess": 0.0,
+      "name": "identity_cost_diagonal_fisher",
+      "pOrthonormalError": 0.0,
+      "principalValue": 5.0,
+      "spectralValues": [
+        5.0,
+        2.0
+      ]
+    },
+    {
+      "accepted": true,
+      "checks": {
+        "pOrthonormalWithinTolerance": true,
+        "residualsWithinTolerance": true,
+        "sampledDirectionsBelowPrincipal": true
+      },
+      "dimension": 6,
+      "maxResidual": 2.739710114807391e-14,
+      "maxSampledRayleighExcess": 0.0,
+      "name": "random_spd_00",
+      "pOrthonormalError": 1.5199666434118514e-15,
+      "principalValue": 9.835421417498118,
+      "spectralValues": [
+        9.835421417498118,
+        3.284171980291084,
+        0.9053078552730435,
+        0.5396642510206096,
+        0.18081864127199215,
+        0.055812025699747005
+      ]
+    },
+    {
+      "accepted": true,
+      "checks": {
+        "pOrthonormalWithinTolerance": true,
+        "residualsWithinTolerance": true,
+        "sampledDirectionsBelowPrincipal": true
+      },
+      "dimension": 6,
+      "maxResidual": 2.018042225327179e-14,
+      "maxSampledRayleighExcess": 0.0,
+      "name": "random_spd_01",
+      "pOrthonormalError": 8.395348732604636e-16,
+      "principalValue": 28.3977085047064,
+      "spectralValues": [
+        28.3977085047064,
+        11.839800815500272,
+        3.3888178308559103,
+        1.2694470920529022,
+        0.5359190086759309,
+        0.10306895793174631
+      ]
+    },
+    {
+      "accepted": true,
+      "checks": {
+        "pOrthonormalWithinTolerance": true,
+        "residualsWithinTolerance": true,
+        "sampledDirectionsBelowPrincipal": true
+      },
+      "dimension": 6,
+      "maxResidual": 1.6119658389954014e-14,
+      "maxSampledRayleighExcess": 0.0,
+      "name": "random_spd_02",
+      "pOrthonormalError": 1.0703641290316207e-15,
+      "principalValue": 23.390031279998347,
+      "spectralValues": [
+        23.390031279998347,
+        3.0849131010164332,
+        1.2888216287994212,
+        0.9236012067348177,
+        0.5769429590709347,
+        0.20379332988736257
+      ]
+    },
+    {
+      "accepted": true,
+      "checks": {
+        "pOrthonormalWithinTolerance": true,
+        "residualsWithinTolerance": true,
+        "sampledDirectionsBelowPrincipal": true
+      },
+      "dimension": 6,
+      "maxResidual": 1.1119979626482848e-14,
+      "maxSampledRayleighExcess": 0.0,
+      "name": "random_spd_03",
+      "pOrthonormalError": 1.5058975169354151e-15,
+      "principalValue": 15.584302656784246,
+      "spectralValues": [
+        15.584302656784246,
+        2.411648537745185,
+        1.7025490037471853,
+        0.6200001975967796,
+        0.5630761623318784,
+        0.16065243693982442
+      ]
+    },
+    {
+      "accepted": true,
+      "checks": {
+        "pOrthonormalWithinTolerance": true,
+        "residualsWithinTolerance": true,
+        "sampledDirectionsBelowPrincipal": true
+      },
+      "dimension": 6,
+      "maxResidual": 1.1953859519410451e-14,
+      "maxSampledRayleighExcess": 0.0,
+      "name": "random_spd_04",
+      "pOrthonormalError": 1.5169673355394313e-15,
+      "principalValue": 15.80175939530347,
+      "spectralValues": [
+        15.80175939530347,
+        5.0575301548316896,
+        3.180334325334167,
+        2.5311784584850785,
+        0.2936297696390034,
+        0.12253014990798862
+      ]
+    },
+    {
+      "accepted": true,
+      "checks": {
+        "pOrthonormalWithinTolerance": true,
+        "residualsWithinTolerance": true,
+        "sampledDirectionsBelowPrincipal": true
+      },
+      "dimension": 6,
+      "maxResidual": 8.311300409762956e-15,
+      "maxSampledRayleighExcess": 0.0,
+      "name": "random_spd_05",
+      "pOrthonormalError": 1.1183029058498843e-15,
+      "principalValue": 11.87635394639839,
+      "spectralValues": [
+        11.87635394639839,
+        2.8075220907865965,
+        1.85489643256948,
+        0.484625633270144,
+        0.22597910434948018,
+        0.12917721309519803
+      ]
+    },
+    {
+      "accepted": true,
+      "checks": {
+        "pOrthonormalWithinTolerance": true,
+        "residualsWithinTolerance": true,
+        "sampledDirectionsBelowPrincipal": true
+      },
+      "dimension": 6,
+      "maxResidual": 2.6187381916136347e-14,
+      "maxSampledRayleighExcess": 0.0,
+      "name": "random_spd_06",
+      "pOrthonormalError": 1.9324273107884442e-15,
+      "principalValue": 14.181597696572435,
+      "spectralValues": [
+        14.181597696572435,
+        5.707216865957824,
+        1.2654844207071827,
+        0.4124416958489646,
+        0.18901867640207007,
+        0.04991104358087471
+      ]
+    },
+    {
+      "accepted": true,
+      "checks": {
+        "pOrthonormalWithinTolerance": true,
+        "residualsWithinTolerance": true,
+        "sampledDirectionsBelowPrincipal": true
+      },
+      "dimension": 6,
+      "maxResidual": 2.3052037378060623e-14,
+      "maxSampledRayleighExcess": 0.0,
+      "name": "random_spd_07",
+      "pOrthonormalError": 1.9233360766340872e-15,
+      "principalValue": 14.313478349473755,
+      "spectralValues": [
+        14.313478349473755,
+        6.60978701078963,
+        2.407893129789913,
+        1.4601974821024348,
+        0.22992881902944612,
+        0.06572421119424922
+      ]
+    },
+    {
+      "accepted": true,
+      "checks": {
+        "pOrthonormalWithinTolerance": true,
+        "residualsWithinTolerance": true,
+        "sampledDirectionsBelowPrincipal": true
+      },
+      "dimension": 6,
+      "maxResidual": 1.5902176704146846e-14,
+      "maxSampledRayleighExcess": 0.0,
+      "name": "random_spd_08",
+      "pOrthonormalError": 1.276791516511011e-15,
+      "principalValue": 11.111573340753564,
+      "spectralValues": [
+        11.111573340753564,
+        5.864500100258943,
+        3.881039287799592,
+        0.6275119659391563,
+        0.13899622515406881,
+        0.038302439326027005
+      ]
+    },
+    {
+      "accepted": true,
+      "checks": {
+        "pOrthonormalWithinTolerance": true,
+        "residualsWithinTolerance": true,
+        "sampledDirectionsBelowPrincipal": true
+      },
+      "dimension": 6,
+      "maxResidual": 3.1137154309092983e-14,
+      "maxSampledRayleighExcess": 0.0,
+      "name": "random_spd_09",
+      "pOrthonormalError": 1.6794291810961665e-15,
+      "principalValue": 13.02657841512408,
+      "spectralValues": [
+        13.02657841512408,
+        8.450845162048548,
+        2.1616376290417216,
+        0.8848758359879083,
+        0.18712886285086414,
+        0.06238989629476195
+      ]
+    },
+    {
+      "accepted": true,
+      "checks": {
+        "pOrthonormalWithinTolerance": true,
+        "residualsWithinTolerance": true,
+        "sampledDirectionsBelowPrincipal": true
+      },
+      "dimension": 6,
+      "maxResidual": 1.89921366967612e-14,
+      "maxSampledRayleighExcess": 0.0,
+      "name": "random_spd_10",
+      "pOrthonormalError": 1.302669992117172e-15,
+      "principalValue": 9.65514425334808,
+      "spectralValues": [
+        9.65514425334808,
+        4.19463113410984,
+        1.1090979226488982,
+        0.5841995830155007,
+        0.36719632458119233,
+        0.0889438413050836
+      ]
+    },
+    {
+      "accepted": true,
+      "checks": {
+        "pOrthonormalWithinTolerance": true,
+        "residualsWithinTolerance": true,
+        "sampledDirectionsBelowPrincipal": true
+      },
+      "dimension": 6,
+      "maxResidual": 2.0983582299447262e-14,
+      "maxSampledRayleighExcess": 0.0,
+      "name": "random_spd_11",
+      "pOrthonormalError": 1.3416727820480756e-15,
+      "principalValue": 28.81512012663009,
+      "spectralValues": [
+        28.81512012663009,
+        7.932874123886841,
+        1.2791739090112404,
+        0.6399769688312736,
+        0.29102149544484085,
+        0.05890716967032662
+      ]
+    },
+    {
+      "accepted": true,
+      "checks": {
+        "pOrthonormalWithinTolerance": true,
+        "residualsWithinTolerance": true,
+        "sampledDirectionsBelowPrincipal": true
+      },
+      "dimension": 6,
+      "maxResidual": 8.92401106971467e-15,
+      "maxSampledRayleighExcess": 0.0,
+      "name": "random_spd_12",
+      "pOrthonormalError": 1.192598983628322e-15,
+      "principalValue": 10.548531045950838,
+      "spectralValues": [
+        10.548531045950838,
+        9.2360978747258,
+        2.5592457733398137,
+        1.4927211228479382,
+        1.011631557076031,
+        0.2514400303231631
+      ]
+    },
+    {
+      "accepted": true,
+      "checks": {
+        "pOrthonormalWithinTolerance": true,
+        "residualsWithinTolerance": true,
+        "sampledDirectionsBelowPrincipal": true
+      },
+      "dimension": 6,
+      "maxResidual": 1.3675255479326943e-14,
+      "maxSampledRayleighExcess": 0.0,
+      "name": "random_spd_13",
+      "pOrthonormalError": 1.6334978619218657e-15,
+      "principalValue": 4.231152634212649,
+      "spectralValues": [
+        4.231152634212649,
+        2.9887248699029723,
+        0.5482350458688234,
+        0.3180511309894432,
+        0.14063496793306382,
+        0.03303220444906915
+      ]
+    },
+    {
+      "accepted": true,
+      "checks": {
+        "pOrthonormalWithinTolerance": true,
+        "residualsWithinTolerance": true,
+        "sampledDirectionsBelowPrincipal": true
+      },
+      "dimension": 6,
+      "maxResidual": 1.6506145375002213e-14,
+      "maxSampledRayleighExcess": 0.0,
+      "name": "random_spd_14",
+      "pOrthonormalError": 1.5092585419138025e-15,
+      "principalValue": 12.733328617229844,
+      "spectralValues": [
+        12.733328617229844,
+        10.982830671858174,
+        5.670256703918968,
+        1.3078317881797599,
+        0.4091605054512344,
+        0.14480627893781928
+      ]
+    },
+    {
+      "accepted": true,
+      "checks": {
+        "pOrthonormalWithinTolerance": true,
+        "residualsWithinTolerance": true,
+        "sampledDirectionsBelowPrincipal": true
+      },
+      "dimension": 6,
+      "maxResidual": 6.511626037759646e-15,
+      "maxSampledRayleighExcess": 0.0,
+      "name": "random_spd_15",
+      "pOrthonormalError": 1.7160197826637161e-15,
+      "principalValue": 8.511758826180667,
+      "spectralValues": [
+        8.511758826180667,
+        2.0782939251076424,
+        1.0620688154043625,
+        0.31624282933528985,
+        0.21873445948186954,
+        0.05756299674965601
+      ]
+    },
+    {
+      "accepted": true,
+      "checks": {
+        "pOrthonormalWithinTolerance": true,
+        "residualsWithinTolerance": true,
+        "sampledDirectionsBelowPrincipal": true
+      },
+      "dimension": 6,
+      "maxResidual": 5.624186466202553e-15,
+      "maxSampledRayleighExcess": 0.0,
+      "name": "random_spd_16",
+      "pOrthonormalError": 9.310203820500198e-16,
+      "principalValue": 10.07445950800492,
+      "spectralValues": [
+        10.07445950800492,
+        3.6803940027494924,
+        1.1574621855185205,
+        0.6812757125501379,
+        0.2634542788847523,
+        0.033370717087427296
+      ]
+    },
+    {
+      "accepted": true,
+      "checks": {
+        "pOrthonormalWithinTolerance": true,
+        "residualsWithinTolerance": true,
+        "sampledDirectionsBelowPrincipal": true
+      },
+      "dimension": 6,
+      "maxResidual": 2.5058842880459773e-14,
+      "maxSampledRayleighExcess": 0.0,
+      "name": "random_spd_17",
+      "pOrthonormalError": 1.7813237775117608e-15,
+      "principalValue": 25.469881552686974,
+      "spectralValues": [
+        25.469881552686974,
+        2.86444993840645,
+        2.477660383112529,
+        1.269259014745135,
+        0.27321758071827834,
+        0.1263790912101359
+      ]
+    },
+    {
+      "accepted": true,
+      "checks": {
+        "pOrthonormalWithinTolerance": true,
+        "residualsWithinTolerance": true,
+        "sampledDirectionsBelowPrincipal": true
+      },
+      "dimension": 6,
+      "maxResidual": 1.91157889642566e-14,
+      "maxSampledRayleighExcess": 0.0,
+      "name": "random_spd_18",
+      "pOrthonormalError": 9.44578729614132e-16,
+      "principalValue": 13.248811798592683,
+      "spectralValues": [
+        13.248811798592683,
+        6.757099566351274,
+        2.0942039429571566,
+        0.8015980372640235,
+        0.27970996447800167,
+        0.12485652901427455
+      ]
+    },
+    {
+      "accepted": true,
+      "checks": {
+        "pOrthonormalWithinTolerance": true,
+        "residualsWithinTolerance": true,
+        "sampledDirectionsBelowPrincipal": true
+      },
+      "dimension": 6,
+      "maxResidual": 7.004547898365515e-15,
+      "maxSampledRayleighExcess": 0.0,
+      "name": "random_spd_19",
+      "pOrthonormalError": 1.0081890755283338e-15,
+      "principalValue": 8.103931140327564,
+      "spectralValues": [
+        8.103931140327564,
+        4.594432055203478,
+        1.8923433169179393,
+        0.9574151014332282,
+        0.23277557404809698,
+        0.0717096329306619
+      ]
+    }
+  ],
+  "config": "configs/synthetic_fisher_gate.json",
+  "configSha256": "f5456fc5d1546471c60860098f845db310005872309d5bd034492b36dfa62c32",
+  "numpy": "2.4.6",
+  "python": "3.11.9",
+  "schema": "synthetic-fisher-gate/v1",
+  "seed": 20260919
+}

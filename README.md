@@ -33,9 +33,10 @@ The planned study has four linked components:
    quality, reporting detection, localisation, uncertainty, failure cases, and
    multiplicity-corrected inference.
 
-The theory gate currently distinguishes metric anisotropy from genuine
-Riemannian curvature. Terminology and the central formal result will be frozen
-only after the curvature construction has an operational role in the detector.
+The theory gate now distinguishes metric anisotropy from genuine Riemannian
+curvature. The first implemented primitive is the generalized Fisher
+sensitivity problem `F v = lambda P v`, where `P` is an explicit perturbation
+cost metric.
 
 ## Results
 
@@ -53,8 +54,10 @@ The review identified a direct 2001 precedent that optimizes blind-watermark
 synchronization patterns through Fisher information, and confirmed that the
 Gaussian location--scale manifold has constant Fisher--Rao curvature. These
 findings narrow the defensible contribution to a detector-linked geometric
-design rule with matched empirical validation. Manuscript citations still
-require final publisher-version and editorial-status checks.
+design rule with matched empirical validation. A first source module now
+implements the generalized Rayleigh quotient, Gaussian mean-family Fisher
+matrix, generalized eigen-directions and spectral-gap calculation. Manuscript
+citations still require final publisher-version and editorial-status checks.
 
 Empirical performance tables will appear here only after the corresponding
 commands, raw outputs, configurations, seeds, environment manifest, and hashes
@@ -65,8 +68,8 @@ are committed under `results/`.
 The Fisher metric supplies a defensible local sensitivity objective, subject to
 an explicit perturbation-cost metric. A curvature-based authentication claim
 requires an additional geometric construction and evidence that it changes the
-blind watermarking design. The next milestone is to close that theory gate and
-run a preregistered synthetic validation.
+blind watermarking design. The next milestone is the synthetic validation of
+the Fisher-sensitivity primitive before final detector coding.
 
 ## Repository layout
 
@@ -121,8 +124,19 @@ to the unverified state.
 ### Verify the current source tools
 
 ```powershell
+python -m pip install -r requirements.txt
 python -m unittest discover -s tests -v
 ```
+
+### Reproduce the synthetic Fisher gate
+
+```powershell
+python scripts/run_synthetic_fisher_gate.py --config configs/synthetic_fisher_gate.json --output results/synthetic_fisher_gate/summary.json
+```
+
+The command validates the generalized Fisher-sensitivity primitive on known and
+random symmetric-positive-definite cases, then writes an auditable summary under
+`results/synthetic_fisher_gate/`.
 
 ## Editorial target
 
