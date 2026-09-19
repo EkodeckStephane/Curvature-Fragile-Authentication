@@ -56,8 +56,12 @@ Gaussian location--scale manifold has constant Fisher--Rao curvature. These
 findings narrow the defensible contribution to a detector-linked geometric
 design rule with matched empirical validation. A first source module now
 implements the generalized Rayleigh quotient, Gaussian mean-family Fisher
-matrix, generalized eigen-directions and spectral-gap calculation. Manuscript
-citations still require final publisher-version and editorial-status checks.
+matrix, generalized eigen-directions and spectral-gap calculation. A second
+source module implements the frozen V2 blind-mapping primitives: luminance
+conversion, block DCT, reserved-coefficient masking, local Fisher/cost
+construction, HMAC authentication bits, dithered QIM, block scoring, threshold
+selection and matched basis ablations. Manuscript citations still require final
+publisher-version and editorial-status checks.
 
 Empirical performance tables will appear here only after the corresponding
 commands, raw outputs, configurations, seeds, environment manifest, and hashes
@@ -137,6 +141,16 @@ python scripts/run_synthetic_fisher_gate.py --config configs/synthetic_fisher_ga
 The command validates the generalized Fisher-sensitivity primitive on known and
 random symmetric-positive-definite cases, then writes an auditable summary under
 `results/synthetic_fisher_gate/`.
+
+### Implemented blind-mapping primitives
+
+The current V2 prototype code is deliberately block-level. It exposes the
+audited pieces needed before a real-image pilot: orthonormal 16x16 DCT,
+canonical reserved-coefficient masking, diagonal Fisher/cost matrices,
+HMAC-SHA-256 authentication bits, dithered scalar QIM, block score extraction,
+threshold calibration, pixel-map expansion, and Fisher/random/fixed matched
+basis variants. Image-dataset pilots will be added only after dataset licenses,
+splits, attacks, and thresholds are frozen.
 
 ## Editorial target
 
