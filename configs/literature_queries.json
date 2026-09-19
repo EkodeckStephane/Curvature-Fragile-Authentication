@@ -1,0 +1,30 @@
+[
+  {
+    "id": "fragile_authentication",
+    "query": "fragile watermarking image authentication tamper localization"
+  },
+  {
+    "id": "fragile_deep",
+    "query": "deep fragile watermarking image authentication tamper localization"
+  },
+  {
+    "id": "fisher_watermarking",
+    "query": "Fisher information metric image watermarking"
+  },
+  {
+    "id": "information_geometry_authentication",
+    "query": "information geometry image authentication tamper detection"
+  },
+  {
+    "id": "fisher_image_sensitivity",
+    "query": "Fisher information image local sensitivity perturbation"
+  },
+  {
+    "id": "tifs_fragile",
+    "query": "fragile watermarking authentication IEEE Transactions on Information Forensics and Security"
+  },
+  {
+    "id": "tifs_tamper_localization",
+    "query": "image tamper localization IEEE Transactions on Information Forensics and Security"
+  }
+]

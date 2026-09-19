@@ -1,0 +1,55 @@
+{
+  "runStartedAtUtc": "2026-09-19T17:30:37Z",
+  "service": "Semantic Scholar Academic Graph API",
+  "endpoint": "https://api.semanticscholar.org/graph/v1/paper/search",
+  "credentialHandling": "x-api-key sourced from process environment; value excluded from files and outputs",
+  "minimumRequestIntervalSeconds": 1.1,
+  "limitPerQuery": 100,
+  "queries": [
+    {
+      "id": "fragile_authentication",
+      "returned": 100,
+      "reportedTotal": 3062,
+      "rawResponseSha256": "bcd5dae05efa00effcd1b2efb2c2fff1358c8ef3e4334a98b190f0f455cf97e7"
+    },
+    {
+      "id": "fragile_deep",
+      "returned": 100,
+      "reportedTotal": 1230,
+      "rawResponseSha256": "d3d995bbc1f1b377ac09a4e59c0145b7898d73e399876086ddc7d752ef23b747"
+    },
+    {
+      "id": "fisher_watermarking",
+      "returned": 100,
+      "reportedTotal": 587,
+      "rawResponseSha256": "5abdeec3d1ec9f99678ac8be602743b8ec03eedd956c3c3569a71471b3dbe021"
+    },
+    {
+      "id": "information_geometry_authentication",
+      "returned": 100,
+      "reportedTotal": 7437,
+      "rawResponseSha256": "713051a7b360fb5282a2976912a1e82af29947290f7f648e04afbe024f40a620"
+    },
+    {
+      "id": "fisher_image_sensitivity",
+      "returned": 100,
+      "reportedTotal": 6107,
+      "rawResponseSha256": "a992005bc94ed9d6709f138b02601f6031168e8231b8c89222b684b01010010c"
+    },
+    {
+      "id": "tifs_fragile",
+      "returned": 6,
+      "reportedTotal": 6,
+      "rawResponseSha256": "5b7eca72db5af450d1658ab7c4fc556f3f91bb2ccf13d22459d7f04456e2c100"
+    },
+    {
+      "id": "tifs_tamper_localization",
+      "returned": 28,
+      "reportedTotal": 28,
+      "rawResponseSha256": "1dd001087756dadfd6ed8b682a4e7ec206af52589c92aa22b0d72bf28fb7d529"
+    }
+  ],
+  "uniqueCandidatesAfterPaperIdDeduplication": 459,
+  "localCandidateCsvSha256": "d11813f157a030a432abfedb9a25888791458d4a3ce0635d1baf6afb6aa93e7e",
+  "interpretation": "Discovery result only. Broad queries were truncated at 100 records. Candidate metadata and claims require primary-source verification and full-text reading before manuscript use."
+}

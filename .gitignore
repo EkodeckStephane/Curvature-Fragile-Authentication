@@ -1,0 +1,31 @@
+# Local governance and continuity records
+AGENTS.md
+.project/
+prompt_tatouage_fragile_fisher.md
+.env
+.env.*
+!.env.example
+
+# Manuscript and private literature workspace
+manuscript/
+literature/
+
+# Datasets are retrieved through versioned scripts and manifests
+data/
+
+# Python environments and generated caches
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Local IDE and operating-system files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Generated results remain ignored until a complete run writes a manifest
+results/_scratch/
