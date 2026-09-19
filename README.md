@@ -174,6 +174,16 @@ python scripts/audit_image_corpus.py --root path\to\image_corpus --output result
 Dataset-derived summaries stay out of public results until source, version,
 license, splits, and citation requirements are checked.
 
+### Run a private real-image scratch pilot
+
+```powershell
+python scripts/run_blind_v2_real_pilot.py --root path\to\image_corpus --output results\_scratch\blind_v2_real_pilot.json
+```
+
+This command exercises the V2 detector on local images and writes an ignored
+engineering manifest. The manifest is marked `promotionReady: false` until the
+dataset manifest is complete.
+
 ## Editorial target
 
 The first target is IEEE Transactions on Information Forensics and Security.
