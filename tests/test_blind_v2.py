@@ -90,6 +90,14 @@ class BlindV2Tests(unittest.TestCase):
             embedded = qim_embed_scalar(17.3, bit, delta, dither_value)
             self.assertEqual(qim_extract_bit(embedded, delta, dither_value), bit)
 
+    def test_key_and_dither_caches_are_stable(self) -> None:
+        self.assertIs(derive_keys(self.master), derive_keys(self.master))
+        first = dither(self.keys.embed, (5, 7), 2, 4.0)
+        second = dither(self.keys.embed, (5, 7), 2, 4.0)
+        other_bit = dither(self.keys.embed, (5, 7), 3, 4.0)
+        self.assertEqual(first, second)
+        self.assertNotEqual(first, other_bit)
+
     def test_block_embedding_extracts_clean_authentication_bits(self) -> None:
         embedded, embedded_bits = embed_block_coefficients(
             self.coefficients,

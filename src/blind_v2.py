@@ -180,6 +180,7 @@ def reserved_frequency_cost_diagonal() -> tuple[float, ...]:
     )
 
 
+@lru_cache(maxsize=128)
 def derive_keys(master_key: bytes) -> V2Keys:
     if len(master_key) < 32:
         raise ValueError("master_key must contain at least 32 bytes")
@@ -343,7 +344,24 @@ def authentication_bits(
 def dither(embed_key: bytes, block_index: tuple[int, int], bit_index: int, delta: float) -> float:
     if delta <= 0:
         raise ValueError("delta must be positive")
-    seed = _seed_from_hmac(embed_key, b"dither", block_index, bit_index)
+    return _cached_dither(
+        embed_key,
+        int(block_index[0]),
+        int(block_index[1]),
+        int(bit_index),
+        float(delta),
+    )
+
+
+@lru_cache(maxsize=262144)
+def _cached_dither(
+    embed_key: bytes,
+    block_row: int,
+    block_col: int,
+    bit_index: int,
+    delta: float,
+) -> float:
+    seed = _seed_from_hmac(embed_key, b"dither", (block_row, block_col), bit_index)
     unit = seed / float(2**64)
     return (unit - 0.5) * delta / 2.0
 
