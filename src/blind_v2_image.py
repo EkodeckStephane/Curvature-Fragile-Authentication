@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Iterable
+from typing import Iterable, Literal
 
 import numpy as np
 
@@ -37,6 +37,14 @@ class ImageVerifyResult:
     tamper_blocks: np.ndarray | None = None
     tamper_pixels: np.ndarray | None = None
     clean_bit_error_rate: float | None = None
+
+
+SyntheticAttack = Literal[
+    "center_mean",
+    "copy_move",
+    "constant_average_block",
+    "inter_block_substitution",
+]
 
 
 def image_blocks(image: np.ndarray, block_size: int = BLOCK_SIZE) -> Iterable[tuple[int, int, np.ndarray]]:
@@ -193,6 +201,97 @@ def calibrate_tau_from_clean_images(
     return tau, fpr, clean_scores
 
 
+def apply_synthetic_attack(
+    image: np.ndarray,
+    attack: SyntheticAttack,
+    source: np.ndarray | None = None,
+    block_size: int = BLOCK_SIZE,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Apply a deterministic block-aligned synthetic tamper attack.
+
+    Returns the attacked image and the block-level ground-truth tamper mask.
+    """
+
+    value = trim_to_block_grid(image, block_size)
+    attacked = value.copy()
+    block_rows = value.shape[0] // block_size
+    block_cols = value.shape[1] // block_size
+    if block_rows < 4 or block_cols < 4:
+        raise ValueError("synthetic attacks require at least a 4x4 block grid")
+    mask = np.zeros((block_rows, block_cols), dtype=bool)
+
+    if attack == "center_mean":
+        rows = range(block_rows // 2 - 1, block_rows // 2 + 1)
+        cols = range(block_cols // 2 - 1, block_cols // 2 + 1)
+        fill = float(np.mean(value))
+        for block_row in rows:
+            for block_col in cols:
+                _fill_block(attacked, block_row, block_col, fill, block_size)
+                mask[block_row, block_col] = True
+    elif attack == "copy_move":
+        for offset_row in range(2):
+            for offset_col in range(2):
+                src = value[
+                    offset_row * block_size : (offset_row + 1) * block_size,
+                    offset_col * block_size : (offset_col + 1) * block_size,
+                ]
+                dst_row = block_rows - 2 + offset_row
+                dst_col = block_cols - 2 + offset_col
+                _set_block(attacked, dst_row, dst_col, src, block_size)
+                mask[dst_row, dst_col] = True
+    elif attack == "constant_average_block":
+        targets = ((1, 1), (1, block_cols - 2), (block_rows - 2, 1))
+        for block_row, block_col in targets:
+            block = attacked[
+                block_row * block_size : (block_row + 1) * block_size,
+                block_col * block_size : (block_col + 1) * block_size,
+            ]
+            _fill_block(attacked, block_row, block_col, float(np.mean(block)), block_size)
+            mask[block_row, block_col] = True
+    elif attack == "inter_block_substitution":
+        donor = trim_to_block_grid(source, block_size) if source is not None else value
+        donor_block = donor[0:block_size, 0:block_size]
+        targets = ((0, block_cols - 1), (block_rows - 1, 0))
+        for block_row, block_col in targets:
+            _set_block(attacked, block_row, block_col, donor_block, block_size)
+            mask[block_row, block_col] = True
+    else:
+        raise ValueError(f"unknown synthetic attack: {attack}")
+
+    return attacked, mask
+
+
+def block_metrics(predicted: np.ndarray, truth: np.ndarray) -> dict[str, float | int]:
+    """Compute block-level binary localization metrics."""
+
+    pred = np.asarray(predicted, dtype=bool)
+    gt = np.asarray(truth, dtype=bool)
+    if pred.shape != gt.shape:
+        raise ValueError("predicted and truth masks must have the same shape")
+    tp = int(np.sum(pred & gt))
+    fp = int(np.sum(pred & ~gt))
+    fn = int(np.sum(~pred & gt))
+    tn = int(np.sum(~pred & ~gt))
+    precision = tp / (tp + fp) if tp + fp else 0.0
+    recall = tp / (tp + fn) if tp + fn else 0.0
+    f1 = 2.0 * precision * recall / (precision + recall) if precision + recall else 0.0
+    iou = tp / (tp + fp + fn) if tp + fp + fn else 0.0
+    fpr = fp / (fp + tn) if fp + tn else 0.0
+    fnr = fn / (fn + tp) if fn + tp else 0.0
+    return {
+        "tp": tp,
+        "fp": fp,
+        "fn": fn,
+        "tn": tn,
+        "precision": float(precision),
+        "recall": float(recall),
+        "f1": float(f1),
+        "iou": float(iou),
+        "fpr": float(fpr),
+        "fnr": float(fnr),
+    }
+
+
 def psnr(reference: np.ndarray, candidate: np.ndarray, peak: float = 255.0) -> float:
     ref = np.asarray(reference, dtype=np.float64)
     cand = np.asarray(candidate, dtype=np.float64)
@@ -202,3 +301,19 @@ def psnr(reference: np.ndarray, candidate: np.ndarray, peak: float = 255.0) -> f
     if mse == 0.0:
         return float("inf")
     return float(10.0 * np.log10((peak * peak) / mse))
+
+
+def _fill_block(
+    image: np.ndarray, block_row: int, block_col: int, value: float, block_size: int
+) -> None:
+    row = block_row * block_size
+    col = block_col * block_size
+    image[row : row + block_size, col : col + block_size] = value
+
+
+def _set_block(
+    image: np.ndarray, block_row: int, block_col: int, block: np.ndarray, block_size: int
+) -> None:
+    row = block_row * block_size
+    col = block_col * block_size
+    image[row : row + block_size, col : col + block_size] = block

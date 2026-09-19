@@ -6,6 +6,13 @@
   "height": 64,
   "width": 64,
   "basisMode": "fisher",
+  "baselineModes": ["fisher", "smallest", "random", "fixed", "identity_cost"],
+  "attacks": [
+    "center_mean",
+    "copy_move",
+    "constant_average_block",
+    "inter_block_substitution"
+  ],
   "deltaEmbedCandidates": [2, 4, 6, 8, 10, 12],
   "minPsnrDb": 40.0,
   "maxCleanBitErrorRate": 0.01,

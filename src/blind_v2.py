@@ -230,7 +230,7 @@ def build_block_model(
         canonical=canonical,
         energies=energies,
         fisher=fisher,
-        cost=cost,
+        cost=active_cost,
         values=values,
         basis=basis,
     )

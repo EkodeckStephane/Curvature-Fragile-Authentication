@@ -159,8 +159,9 @@ python scripts/run_blind_v2_synthetic_image_gate.py --config configs/blind_v2_sy
 ```
 
 The command generates deterministic synthetic luminance images, embeds and
-verifies the V2 blind detector, selects `Delta_embed`, calibrates `tau`, and
-writes a public manifest without storing the secret key.
+verifies the V2 blind detector, selects `Delta_embed`, calibrates `tau`, runs
+matched basis variants and block-aligned synthetic attacks, and writes a public
+manifest without storing the secret key.
 
 ## Editorial target
 

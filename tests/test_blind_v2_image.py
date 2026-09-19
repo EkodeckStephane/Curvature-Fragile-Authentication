@@ -11,6 +11,8 @@ import numpy as np
 
 from src.blind_v2 import master_key_from_seed
 from src.blind_v2_image import (
+    apply_synthetic_attack,
+    block_metrics,
     calibrate_delta_embed,
     calibrate_tau_from_clean_images,
     embed_image,
@@ -72,6 +74,33 @@ class BlindV2ImageTests(unittest.TestCase):
     def test_psnr_handles_identity(self) -> None:
         self.assertEqual(psnr(self.images[0], self.images[0]), float("inf"))
 
+    def test_synthetic_attacks_return_block_masks(self) -> None:
+        for attack in (
+            "center_mean",
+            "copy_move",
+            "constant_average_block",
+            "inter_block_substitution",
+        ):
+            attacked, mask = apply_synthetic_attack(
+                self.gate.synthetic_images(123, 1, 64, 64)[0],
+                attack,
+                source=self.gate.synthetic_images(124, 1, 64, 64)[0],
+            )
+            self.assertEqual(attacked.shape, (64, 64))
+            self.assertEqual(mask.shape, (4, 4))
+            self.assertGreater(int(np.sum(mask)), 0)
+
+    def test_block_metrics_counts_binary_maps(self) -> None:
+        metrics = block_metrics(
+            np.array([[True, False], [True, False]]),
+            np.array([[True, True], [False, False]]),
+        )
+        self.assertEqual(metrics["tp"], 1)
+        self.assertEqual(metrics["fp"], 1)
+        self.assertEqual(metrics["fn"], 1)
+        self.assertEqual(metrics["tn"], 1)
+        self.assertAlmostEqual(metrics["f1"], 0.5)
+
     def test_gate_script_writes_manifest_without_secret_key(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             output = Path(directory) / "summary.json"
@@ -84,6 +113,9 @@ class BlindV2ImageTests(unittest.TestCase):
         self.assertTrue(summary["allAccepted"])
         self.assertTrue(written["allAccepted"])
         self.assertFalse(written["masterKeyStored"])
+        self.assertEqual(written["schema"], "blind-v2-synthetic-image-gate/v2")
+        self.assertEqual(len(written["baselines"]), 5)
+        self.assertGreater(len(written["baselines"][0]["attacks"]), 0)
         self.assertIn("masterKeyId", written)
         self.assertNotIn("masterKeyValue", written)
         self.assertNotIn("masterKeyHex", written)
