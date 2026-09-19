@@ -60,7 +60,9 @@ matrix, generalized eigen-directions and spectral-gap calculation. A second
 source module implements the frozen V2 blind-mapping primitives: luminance
 conversion, block DCT, reserved-coefficient masking, local Fisher/cost
 construction, HMAC authentication bits, dithered QIM, block scoring, threshold
-selection and matched basis ablations. Manuscript citations still require final
+selection and matched basis ablations. The V2 Fisher/smallest/identity-cost
+modes use the analytic diagonal solution of `F v = lambda P v`, avoiding a
+dense eigensolver for every block. Manuscript citations still require final
 publisher-version and editorial-status checks.
 
 Public empirical tables are limited to experiments whose commands, raw outputs,

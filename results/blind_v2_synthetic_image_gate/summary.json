@@ -287,28 +287,28 @@
           "cleanBitErrorRate": 0.0,
           "flaggedBlockCount": 0,
           "imageIndex": 0,
-          "psnrDb": 72.93827265102723
+          "psnrDb": 72.99150388251304
         },
         {
           "blockCount": 16,
           "cleanBitErrorRate": 0.0,
           "flaggedBlockCount": 0,
           "imageIndex": 1,
-          "psnrDb": 73.73069968338426
+          "psnrDb": 73.09046490415076
         },
         {
           "blockCount": 16,
           "cleanBitErrorRate": 0.0,
           "flaggedBlockCount": 0,
           "imageIndex": 2,
-          "psnrDb": 72.82490513264737
+          "psnrDb": 73.09970597653417
         },
         {
           "blockCount": 16,
           "cleanBitErrorRate": 0.0,
           "flaggedBlockCount": 0,
           "imageIndex": 3,
-          "psnrDb": 72.85105117251548
+          "psnrDb": 72.95663101113752
         }
       ],
       "cleanFlaggedBlockCount": 0,
@@ -324,7 +324,7 @@
         "8/8": 0
       },
       "maxCleanBitErrorRate": 0.0,
-      "meanCleanPsnrDb": 73.08623215989358,
+      "meanCleanPsnrDb": 73.03457644358387,
       "tau": 0.0,
       "validationFalsePositiveRate": 0.0
     },
@@ -614,28 +614,28 @@
           "cleanBitErrorRate": 0.0,
           "flaggedBlockCount": 0,
           "imageIndex": 0,
-          "psnrDb": 73.03594917911565
+          "psnrDb": 72.8890452440278
         },
         {
           "blockCount": 16,
           "cleanBitErrorRate": 0.0,
           "flaggedBlockCount": 0,
           "imageIndex": 1,
-          "psnrDb": 72.36744909159921
+          "psnrDb": 72.17595652381347
         },
         {
           "blockCount": 16,
           "cleanBitErrorRate": 0.0,
           "flaggedBlockCount": 0,
           "imageIndex": 2,
-          "psnrDb": 73.00082512367794
+          "psnrDb": 73.0690742008996
         },
         {
           "blockCount": 16,
           "cleanBitErrorRate": 0.0,
           "flaggedBlockCount": 0,
           "imageIndex": 3,
-          "psnrDb": 72.91453959544143
+          "psnrDb": 72.97327132561358
         }
       ],
       "cleanFlaggedBlockCount": 0,
@@ -651,7 +651,7 @@
         "8/8": 0
       },
       "maxCleanBitErrorRate": 0.0,
-      "meanCleanPsnrDb": 72.82969074745856,
+      "meanCleanPsnrDb": 72.77683682358861,
       "tau": 0.0,
       "validationFalsePositiveRate": 0.0
     },
@@ -1595,28 +1595,28 @@
           "cleanBitErrorRate": 0.0,
           "flaggedBlockCount": 0,
           "imageIndex": 0,
-          "psnrDb": 68.00387826555337
+          "psnrDb": 67.4096582162982
         },
         {
           "blockCount": 16,
           "cleanBitErrorRate": 0.0,
           "flaggedBlockCount": 0,
           "imageIndex": 1,
-          "psnrDb": 67.11960275912327
+          "psnrDb": 66.9831477396794
         },
         {
           "blockCount": 16,
           "cleanBitErrorRate": 0.0,
           "flaggedBlockCount": 0,
           "imageIndex": 2,
-          "psnrDb": 67.88071559003998
+          "psnrDb": 67.64796775035478
         },
         {
           "blockCount": 16,
           "cleanBitErrorRate": 0.0,
           "flaggedBlockCount": 0,
           "imageIndex": 3,
-          "psnrDb": 67.89404069792569
+          "psnrDb": 67.83529668714168
         }
       ],
       "cleanFlaggedBlockCount": 0,
@@ -1632,7 +1632,7 @@
         "8/8": 0
       },
       "maxCleanBitErrorRate": 0.0,
-      "meanCleanPsnrDb": 67.72455932816058,
+      "meanCleanPsnrDb": 67.46901759836851,
       "tau": 0.0,
       "validationFalsePositiveRate": 0.0
     }
@@ -1657,48 +1657,48 @@
       "deltaEmbed": 2.0,
       "maxCleanBitErrorRate": 0.0,
       "meanCleanBitErrorRate": 0.0,
-      "meanPsnrDb": 73.08623215989358,
-      "minPsnrDb": 72.82490513264737
+      "meanPsnrDb": 73.03457644358387,
+      "minPsnrDb": 72.95663101113752
     },
     {
       "accepted": true,
       "deltaEmbed": 4.0,
       "maxCleanBitErrorRate": 0.0,
       "meanCleanBitErrorRate": 0.0,
-      "meanPsnrDb": 66.97567120209813,
-      "minPsnrDb": 66.17485757721786
+      "meanPsnrDb": 66.76334147772891,
+      "minPsnrDb": 65.9903294768207
     },
     {
       "accepted": true,
       "deltaEmbed": 6.0,
       "maxCleanBitErrorRate": 0.0,
       "meanCleanBitErrorRate": 0.0,
-      "meanPsnrDb": 63.21480190494063,
-      "minPsnrDb": 62.68762628312598
+      "meanPsnrDb": 63.35702923993645,
+      "minPsnrDb": 63.07758895231184
     },
     {
       "accepted": true,
       "deltaEmbed": 8.0,
       "maxCleanBitErrorRate": 0.0,
       "meanCleanBitErrorRate": 0.0,
-      "meanPsnrDb": 60.865569584003424,
-      "minPsnrDb": 60.61346593884472
+      "meanPsnrDb": 60.807663781433845,
+      "minPsnrDb": 60.41117787606346
     },
     {
       "accepted": true,
       "deltaEmbed": 10.0,
       "maxCleanBitErrorRate": 0.0,
       "meanCleanBitErrorRate": 0.0,
-      "meanPsnrDb": 58.89541856873263,
-      "minPsnrDb": 58.59264864131231
+      "meanPsnrDb": 58.73368886241136,
+      "minPsnrDb": 58.57831942018525
     },
     {
       "accepted": true,
       "deltaEmbed": 12.0,
       "maxCleanBitErrorRate": 0.0,
       "meanCleanBitErrorRate": 0.0,
-      "meanPsnrDb": 57.356823064046424,
-      "minPsnrDb": 56.95528367341833
+      "meanPsnrDb": 57.461415743989775,
+      "minPsnrDb": 56.938759226617684
     }
   ],
   "imageCount": 4,
@@ -1710,7 +1710,7 @@
       "imageIndex": 0,
       "maxBlockScore": 0.0,
       "payloadBpp": 0.03125,
-      "psnrDb": 72.93827265102723,
+      "psnrDb": 72.99150388251304,
       "shape": [
         64,
         64
@@ -1723,7 +1723,7 @@
       "imageIndex": 1,
       "maxBlockScore": 0.0,
       "payloadBpp": 0.03125,
-      "psnrDb": 73.73069968338426,
+      "psnrDb": 73.09046490415076,
       "shape": [
         64,
         64
@@ -1736,7 +1736,7 @@
       "imageIndex": 2,
       "maxBlockScore": 0.0,
       "payloadBpp": 0.03125,
-      "psnrDb": 72.82490513264737,
+      "psnrDb": 73.09970597653417,
       "shape": [
         64,
         64
@@ -1749,7 +1749,7 @@
       "imageIndex": 3,
       "maxBlockScore": 0.0,
       "payloadBpp": 0.03125,
-      "psnrDb": 72.85105117251548,
+      "psnrDb": 72.95663101113752,
       "shape": [
         64,
         64

@@ -9,9 +9,6 @@ from typing import Literal
 
 import numpy as np
 
-from src.fisher_geometry import generalized_eigen_decomposition
-
-
 BasisMode = Literal["fisher", "smallest", "random", "fixed", "identity_cost"]
 
 PROTOCOL_ID = b"CFA-blind-v2"
@@ -207,14 +204,11 @@ def build_block_model(
     canonical = canonicalize_coefficients(coefficients)
     fisher, cost, energies = fisher_cost_matrices(canonical)
     active_cost = np.eye(PAYLOAD_BITS_PER_BLOCK) if basis_mode == "identity_cost" else cost
-    decomposition = generalized_eigen_decomposition(fisher, active_cost)
 
     if basis_mode in ("fisher", "identity_cost"):
-        basis = decomposition.vectors
-        values = decomposition.values
+        values, basis = diagonal_generalized_basis(fisher, active_cost, descending=True)
     elif basis_mode == "smallest":
-        basis = decomposition.vectors[:, ::-1]
-        values = decomposition.values[::-1]
+        values, basis = diagonal_generalized_basis(fisher, active_cost, descending=False)
     elif basis_mode == "fixed":
         basis = fixed_basis(cost)
         values = np.diag(fisher)
@@ -234,6 +228,38 @@ def build_block_model(
         values=values,
         basis=basis,
     )
+
+
+def diagonal_generalized_basis(
+    fisher: np.ndarray,
+    cost: np.ndarray,
+    descending: bool = True,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Solve diagonal `F v = lambda P v` with `P`-orthonormal vectors.
+
+    V2 constructs diagonal Fisher and cost matrices by design. This analytic
+    path preserves the generalized-eigenvector objective while avoiding a dense
+    eigensolver for every image block.
+    """
+
+    f_diag = np.diag(np.asarray(fisher, dtype=np.float64))
+    p_diag = np.diag(np.asarray(cost, dtype=np.float64))
+    if f_diag.shape != (PAYLOAD_BITS_PER_BLOCK,) or p_diag.shape != (
+        PAYLOAD_BITS_PER_BLOCK,
+    ):
+        raise ValueError("fisher and cost must be 8x8 diagonal matrices")
+    if np.any(f_diag <= 0.0) or np.any(p_diag <= 0.0):
+        raise ValueError("fisher and cost diagonals must be positive")
+
+    values = f_diag / p_diag
+    order = np.argsort(values)
+    if descending:
+        order = order[::-1]
+    sorted_values = values[order]
+    basis = np.zeros((PAYLOAD_BITS_PER_BLOCK, PAYLOAD_BITS_PER_BLOCK), dtype=np.float64)
+    for column, index in enumerate(order):
+        basis[index, column] = 1.0 / np.sqrt(p_diag[index])
+    return sorted_values, basis
 
 
 def fixed_basis(cost: np.ndarray) -> np.ndarray:

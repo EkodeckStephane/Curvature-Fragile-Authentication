@@ -127,6 +127,18 @@ class BlindV2Tests(unittest.TestCase):
         ).basis
         np.testing.assert_allclose(first, second)
 
+    def test_diagonal_fisher_basis_solves_generalized_problem(self) -> None:
+        for mode in ("fisher", "smallest", "identity_cost"):
+            model = build_block_model(self.coefficients, basis_mode=mode)
+            residual = model.fisher @ model.basis - model.cost @ model.basis @ np.diag(
+                model.values
+            )
+            np.testing.assert_allclose(residual, np.zeros_like(residual), atol=1e-12)
+            if mode == "smallest":
+                self.assertTrue(np.all(np.diff(model.values) >= 0.0))
+            else:
+                self.assertTrue(np.all(np.diff(model.values) <= 0.0))
+
     def test_threshold_and_maps(self) -> None:
         tau, fpr = calibrate_threshold(np.array([0.0, 0.0, 0.125, 0.25]), alpha=0.25)
         self.assertEqual(tau, 0.125)
