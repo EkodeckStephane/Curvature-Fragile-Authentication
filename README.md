@@ -180,7 +180,7 @@ When a derived multicorpus was produced with deterministic source-dependent
 filenames, reconstruct the local identity map with:
 
 ```powershell
-python scripts/map_multicorpus_identities.py --derived-root path\to\multicorpus_v1_0 --output-csv results\_scratch\multicorpus_identity_map.csv --bossbase-root path\to\BOSSbase --bows2-root path\to\bows2\cover --dynacis-root path\to\DynaCIS-PIR\data
+python scripts/map_multicorpus_identities.py --derived-root path\to\multicorpus_v1_0 --output-csv results\_scratch\multicorpus_identity_map.csv --bossbase-root path\to\BOSSbase --bows2-root path\to\bows2\cover --dynacis-root path\to\processed_dataset_root
 ```
 
 The command records hashes, dimensions, matched source identifiers, split
@@ -197,6 +197,16 @@ python scripts/enrich_multicorpus_metadata.py --identity-map results\_scratch\mu
 For COCO, the command attaches image IDs and license names/URLs from the
 official annotation JSON. For DTD, it records the official source page, package
 version and citation used by the provenance gate.
+
+Finally, build the public restricted DTD+COCO pilot manifest:
+
+```powershell
+python scripts/build_public_pilot_manifest.py --enriched-map results\_scratch\multicorpus_identity_map_enriched.csv --output-csv results\dataset_manifests\dtd_coco_public_pilot_v1.csv --output-json results\dataset_manifests\dtd_coco_public_pilot_v1.json
+```
+
+The public manifest contains source identifiers, hashes, citations, license or
+reuse metadata, dimensions and split labels. It excludes machine-local paths,
+dataset pixels, watermarked images and attacked images.
 
 ### Run a private real-image scratch pilot
 

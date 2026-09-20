@@ -1,0 +1,39 @@
+{
+  "includedDatasets": {
+    "DTD textures": {
+      "count": 20,
+      "licenses": {
+        "made available to the computer vision community for research purposes": 20
+      },
+      "sourceDatasetUrl": "https://www.robots.ox.ac.uk/~vgg/data/dtd/",
+      "sourceVersion": "dtd-r1.0.1",
+      "splits": {
+        "test_final": 20
+      },
+      "subcorpus": "dtd_textures"
+    },
+    "MS-COCO val2017": {
+      "count": 20,
+      "licenses": {
+        "Attribution License": 4,
+        "Attribution-NoDerivs License": 2,
+        "Attribution-NonCommercial License": 2,
+        "Attribution-NonCommercial-NoDerivs License": 5,
+        "Attribution-NonCommercial-ShareAlike License": 6,
+        "Attribution-ShareAlike License": 1
+      },
+      "sourceDatasetUrl": "https://cocodataset.org/",
+      "sourceVersion": "val2017",
+      "splits": {
+        "test_final": 20
+      },
+      "subcorpus": "ms_coco_val2017"
+    }
+  },
+  "pixelDataIncluded": false,
+  "policy": "The manifest publishes source identifiers, hashes, citations, license or reuse metadata, dimensions and split labels. It does not publish dataset image pixels, attacked images, watermarked images, or machine-local paths.",
+  "privatePathsIncluded": false,
+  "rowCount": 40,
+  "schema": "curvature-fragile-authentication/public-pilot-manifest/v1",
+  "sourceRowCount": 120
+}
