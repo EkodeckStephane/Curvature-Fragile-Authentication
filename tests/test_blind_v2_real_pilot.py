@@ -143,6 +143,9 @@ class BlindV2RealPilotTests(unittest.TestCase):
         self.assertEqual(
             len(written["baselines"][0]["calibrationCleanThresholdCurve"]), 9
         )
+        self.assertEqual(len(written["baselines"][0]["cleanBitMismatchCounts"]), 8)
+        self.assertEqual(len(written["baselines"][0]["cleanBitErrorRates"]), 8)
+        self.assertGreater(written["baselines"][0]["cleanBitTotalCount"], 0)
         self.assertEqual(
             len(written["baselines"][0]["evaluationCleanThresholdCurve"]), 9
         )

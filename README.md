@@ -256,6 +256,12 @@ python scripts/summarize_real_pilot.py --input results\_scratch\blind_v2_real_pi
 The summarizer converts a private scratch manifest into ignored CSV and
 Markdown tables for engineering review.
 
+When the input manifest contains clean decoding diagnostics, the summarizer
+also writes `clean_bits.csv`, with per-basis and per-bit mismatch counts,
+totals and clean error rates. This supports detector-aware reliability
+diagnostics while keeping pixels, local paths and secret material out of the
+public repository.
+
 For paired Fisher-vs-baseline diagnostics on the same evaluated images, run:
 
 ```powershell

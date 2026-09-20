@@ -65,6 +65,27 @@ def timing_rows(manifest: dict[str, Any]) -> list[dict[str, Any]]:
     ]
 
 
+def clean_bit_rows(manifest: dict[str, Any]) -> list[dict[str, Any]]:
+    rows = []
+    for baseline in manifest["baselines"]:
+        counts = baseline.get("cleanBitMismatchCounts")
+        rates = baseline.get("cleanBitErrorRates")
+        total = baseline.get("cleanBitTotalCount")
+        if counts is None or rates is None or total is None:
+            continue
+        for bit_index, (count, rate) in enumerate(zip(counts, rates)):
+            rows.append(
+                {
+                    "basisMode": baseline["basisMode"],
+                    "bitIndex": bit_index,
+                    "mismatchCount": count,
+                    "totalCount": total,
+                    "errorRate": rate,
+                }
+            )
+    return rows
+
+
 def write_csv(path: Path, rows: list[dict[str, Any]]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8", newline="") as handle:
@@ -81,6 +102,7 @@ def markdown_summary(
     modes: list[dict[str, Any]],
     attacks: list[dict[str, Any]],
     timings: list[dict[str, Any]],
+    clean_bits: list[dict[str, Any]],
 ) -> str:
     lines = [
         "# Real-image scratch pilot summary",
@@ -137,6 +159,22 @@ def markdown_summary(
     for row in timings[:12]:
         lines.append("| {phase} | {seconds:.6f} |".format(**row))
 
+    if clean_bits:
+        lines.extend(
+            [
+                "",
+                "## Clean bit reliability",
+                "",
+                "| Basis | bit | mismatches | total | error rate |",
+                "|---|---:|---:|---:|---:|",
+            ]
+        )
+        for row in clean_bits:
+            lines.append(
+                "| {basisMode} | {bitIndex} | {mismatchCount} | {totalCount} | "
+                "{errorRate:.6f} |".format(**row)
+            )
+
     lines.extend(
         [
             "",
@@ -156,19 +194,22 @@ def summarize(input_path: Path, output_dir: Path) -> dict[str, Path]:
     modes = mode_rows(manifest)
     attacks = attack_rows(manifest)
     timings = timing_rows(manifest)
+    clean_bits = clean_bit_rows(manifest)
 
     output_dir.mkdir(parents=True, exist_ok=True)
     paths = {
         "modes": output_dir / "modes.csv",
         "attacks": output_dir / "attacks.csv",
         "timings": output_dir / "timings.csv",
+        "clean_bits": output_dir / "clean_bits.csv",
         "summary": output_dir / "summary.md",
     }
     write_csv(paths["modes"], modes)
     write_csv(paths["attacks"], attacks)
     write_csv(paths["timings"], timings)
+    write_csv(paths["clean_bits"], clean_bits)
     paths["summary"].write_text(
-        markdown_summary(manifest, modes, attacks, timings),
+        markdown_summary(manifest, modes, attacks, timings, clean_bits),
         encoding="utf-8",
     )
     return paths

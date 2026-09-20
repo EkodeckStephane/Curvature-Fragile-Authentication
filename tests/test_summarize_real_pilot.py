@@ -42,12 +42,17 @@ class SummarizeRealPilotTests(unittest.TestCase):
                 attacks = list(csv.DictReader(handle))
             with paths["timings"].open(encoding="utf-8") as handle:
                 timings = list(csv.DictReader(handle))
+            with paths["clean_bits"].open(encoding="utf-8") as handle:
+                clean_bits = list(csv.DictReader(handle))
             summary = paths["summary"].read_text(encoding="utf-8")
 
         self.assertEqual(modes[0]["basisMode"], "fisher")
         self.assertEqual(attacks[0]["attack"], "center_mean")
         self.assertEqual(timings[0]["phase"], "delta_calibration")
+        self.assertEqual(clean_bits[0]["bitIndex"], "0")
+        self.assertEqual(clean_bits[0]["mismatchCount"], "1")
         self.assertIn("Promotion ready: `False`", summary)
+        self.assertIn("Clean bit reliability", summary)
         self.assertNotIn("masterKeyValue", summary)
         self.assertNotIn("secretKey", summary)
 
@@ -74,6 +79,9 @@ def fake_manifest():
                 "tau": 0.0,
                 "validationFalsePositiveRate": 0.005,
                 "cleanFlaggedBlockCount": 2,
+                "cleanBitMismatchCounts": [1, 0, 0, 0, 0, 0, 0, 0],
+                "cleanBitTotalCount": 10,
+                "cleanBitErrorRates": [0.1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
                 "meanCleanPsnrDb": 72.0,
                 "minCleanPsnrDb": 71.0,
                 "maxCleanBitErrorRate": 0.001,

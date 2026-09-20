@@ -551,6 +551,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
 
         clean_records = []
         evaluation_clean_score_items = []
+        clean_bit_mismatch_counts = np.zeros(8, dtype=np.int64)
+        clean_bit_total_count = 0
         with timer.measure(f"{mode}.verify_clean_evaluation"):
             for index, embedded_item in enumerate(evaluation_embedded):
                 source_item = evaluation_images[index]
@@ -564,6 +566,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                     delta_mode=args.delta_mode,
                 )
                 evaluation_clean_score_items.append(verified.scores.ravel())
+                bit_mismatches = verified.extracted_bits != verified.expected_bits
+                clean_bit_mismatch_counts += np.sum(bit_mismatches, axis=(0, 1))
+                clean_bit_total_count += int(
+                    bit_mismatches.shape[0] * bit_mismatches.shape[1]
+                )
                 clean_records.append(
                     {
                         "imageIndex": index,
@@ -637,6 +644,16 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 "cleanScoreHistogram": {
                     f"{k}/8": int(np.sum(clean_scores == k / 8.0)) for k in range(9)
                 },
+                "cleanBitMismatchCounts": [
+                    int(value) for value in clean_bit_mismatch_counts.tolist()
+                ],
+                "cleanBitTotalCount": int(clean_bit_total_count),
+                "cleanBitErrorRates": [
+                    float(value / clean_bit_total_count)
+                    if clean_bit_total_count
+                    else 0.0
+                    for value in clean_bit_mismatch_counts.tolist()
+                ],
                 "calibrationCleanThresholdCurve": clean_threshold_curve(clean_scores),
                 "evaluationCleanThresholdCurve": clean_threshold_curve(
                     np.concatenate(evaluation_clean_score_items)
