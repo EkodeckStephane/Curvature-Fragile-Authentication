@@ -19,7 +19,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from src.blind_v2 import BasisMode, key_id, master_key_from_seed, trim_to_block_grid
+from src.blind_v2 import BasisMode, DeltaMode, key_id, master_key_from_seed, trim_to_block_grid
 from src.blind_v2 import ScoreMode
 from src.blind_v2_image import (
     SyntheticAttack,
@@ -510,13 +510,20 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             min_psnr_db=args.min_psnr_db,
             max_clean_bit_error_rate=args.max_clean_bit_error_rate,
             basis_mode=args.calibration_basis_mode,
+            delta_mode=args.delta_mode,
         )
 
     baseline_records = []
     for mode in basis_modes:
         with timer.measure(f"{mode}.embed_calibration"):
             calibration_embedded = [
-                embed_image(item.array, master_key, delta_embed, basis_mode=mode)
+                embed_image(
+                    item.array,
+                    master_key,
+                    delta_embed,
+                    basis_mode=mode,
+                    delta_mode=args.delta_mode,
+                )
                 for item in calibration_images
             ]
         calibration_watermarked_images = [item.watermarked for item in calibration_embedded]
@@ -528,10 +535,17 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 alpha=args.target_false_positive_rate,
                 basis_mode=mode,
                 score_mode=args.score_mode,
+                delta_mode=args.delta_mode,
             )
         with timer.measure(f"{mode}.embed_evaluation"):
             evaluation_embedded = [
-                embed_image(item.array, master_key, delta_embed, basis_mode=mode)
+                embed_image(
+                    item.array,
+                    master_key,
+                    delta_embed,
+                    basis_mode=mode,
+                    delta_mode=args.delta_mode,
+                )
                 for item in evaluation_images
             ]
 
@@ -547,6 +561,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                     tau=tau,
                     basis_mode=mode,
                     score_mode=args.score_mode,
+                    delta_mode=args.delta_mode,
                 )
                 evaluation_clean_score_items.append(verified.scores.ravel())
                 clean_records.append(
@@ -588,6 +603,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                         tau=tau,
                         basis_mode=mode,
                         score_mode=args.score_mode,
+                        delta_mode=args.delta_mode,
                     )
                     score_truth_pairs.append((verified.scores, truth))
                     metrics = block_metrics(verified.tamper_blocks, truth)
@@ -665,6 +681,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "masterKeyStored": False,
         "calibrationBasisMode": args.calibration_basis_mode,
         "scoreMode": args.score_mode,
+        "deltaMode": args.delta_mode,
         "basisModes": basis_modes,
         "attacks": attacks,
         "deltaEmbedCandidates": candidates,
@@ -735,6 +752,11 @@ def parse_args() -> argparse.Namespace:
         "--score-mode",
         choices=("hamming", "fisher_weighted", "fisher_top4"),
         default="hamming",
+    )
+    parser.add_argument(
+        "--delta-mode",
+        choices=("constant", "fisher_sqrt"),
+        default="constant",
     )
     parser.add_argument(
         "--calibration-basis-mode",

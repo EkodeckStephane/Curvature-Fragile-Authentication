@@ -120,6 +120,7 @@ class BlindV2RealPilotTests(unittest.TestCase):
                 max_clean_bit_error_rate=0.01,
                 target_false_positive_rate=0.0,
                 score_mode="hamming",
+                delta_mode="constant",
                 calibration_basis_mode="fisher",
                 basis_modes=["fisher"],
                 attacks=["center_mean"],

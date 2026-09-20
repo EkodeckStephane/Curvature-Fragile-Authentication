@@ -239,6 +239,16 @@ Available score modes are `hamming`, `fisher_weighted`, and `fisher_top4`.
 The non-default modes are experimental diagnostics for coupling the Fisher
 sensitivity values to the block decision rule.
 
+The embedding allocation can also be switched:
+
+```powershell
+python scripts/run_blind_v2_real_pilot.py --manifest-csv results\dataset_manifests\dtd_coco_public_pilot_v1.csv --manifest-derived-root path\to\multicorpus_v1_0 --output results\_scratch\blind_v2_manifest_delta_alloc.json --calibration-images-per-subcorpus 3 --evaluation-images-per-subcorpus 5 --target-false-positive-rate 0.01 --delta-mode fisher_sqrt
+```
+
+`delta-mode=constant` is the default. `delta-mode=fisher_sqrt` keeps the same
+payload and mean base step scale while assigning larger QIM steps to directions
+with larger model sensitivity values. It is an experimental design diagnostic.
+
 ```powershell
 python scripts/summarize_real_pilot.py --input results\_scratch\blind_v2_real_pilot.json --output-dir results\_scratch\blind_v2_real_pilot_summary
 ```

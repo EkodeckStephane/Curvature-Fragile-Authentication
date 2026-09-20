@@ -14,6 +14,7 @@ from src.blind_v2 import (
     bit_mismatch_score,
     calibrate_threshold,
     canonicalize_coefficients,
+    delta_allocation_scales,
     derive_keys,
     dct2,
     dither,
@@ -113,6 +114,38 @@ class BlindV2Tests(unittest.TestCase):
         score, extracted, expected = extract_score_for_test(
             embedded, self.master, delta_embed=8.0
         )
+        self.assertEqual(score, 0.0)
+        np.testing.assert_array_equal(extracted, expected)
+        np.testing.assert_array_equal(embedded_bits, expected)
+
+    def test_fisher_sqrt_delta_allocation_is_normalized_and_ordered(self) -> None:
+        values = np.array([9.0, 4.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0])
+        constant = delta_allocation_scales(values, "constant")
+        allocated = delta_allocation_scales(values, "fisher_sqrt")
+
+        np.testing.assert_allclose(constant, np.ones(8))
+        self.assertAlmostEqual(float(np.mean(allocated)), 1.0)
+        self.assertGreater(allocated[0], allocated[1])
+        self.assertGreater(allocated[1], allocated[2])
+
+    def test_fisher_sqrt_delta_allocation_round_trips_clean_block(self) -> None:
+        embedded, embedded_bits = embed_block_coefficients(
+            self.coefficients,
+            image_shape=(16, 16),
+            block_index=(0, 0),
+            master_key=self.master,
+            delta_embed=8.0,
+            delta_mode="fisher_sqrt",
+        )
+        score, extracted, expected = extract_block_score(
+            embedded,
+            image_shape=(16, 16),
+            block_index=(0, 0),
+            master_key=self.master,
+            delta_embed=8.0,
+            delta_mode="fisher_sqrt",
+        )
+
         self.assertEqual(score, 0.0)
         np.testing.assert_array_equal(extracted, expected)
         np.testing.assert_array_equal(embedded_bits, expected)

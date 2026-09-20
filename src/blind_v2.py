@@ -11,6 +11,7 @@ import numpy as np
 
 BasisMode = Literal["fisher", "smallest", "random", "fixed", "identity_cost"]
 ScoreMode = Literal["hamming", "fisher_weighted", "fisher_top4"]
+DeltaMode = Literal["constant", "fisher_sqrt"]
 
 PROTOCOL_ID = b"CFA-blind-v2"
 BLOCK_SIZE = 16
@@ -31,6 +32,8 @@ MODEL_RADIAL_MAX = 8
 EPSILON = 1.0
 FREQUENCY_COST_SLOPE = 0.10
 DELTA_FEATURE = 4.0
+DELTA_ALLOCATION_MIN = 0.5
+DELTA_ALLOCATION_MAX = 2.0
 
 
 @dataclass(frozen=True)
@@ -392,6 +395,7 @@ def embed_block_coefficients(
     master_key: bytes,
     delta_embed: float,
     basis_mode: BasisMode = "fisher",
+    delta_mode: DeltaMode = "constant",
 ) -> tuple[np.ndarray, np.ndarray]:
     """Embed one block's authentication bits into reserved DCT coefficients."""
 
@@ -402,6 +406,7 @@ def embed_block_coefficients(
         keys=derive_keys(master_key),
         delta_embed=delta_embed,
         basis_mode=basis_mode,
+        delta_mode=delta_mode,
     )
 
 
@@ -412,6 +417,7 @@ def embed_block_coefficients_with_keys(
     keys: V2Keys,
     delta_embed: float,
     basis_mode: BasisMode = "fisher",
+    delta_mode: DeltaMode = "constant",
 ) -> tuple[np.ndarray, np.ndarray]:
     """Embed one block's authentication bits with pre-derived V2 keys."""
 
@@ -420,11 +426,16 @@ def embed_block_coefficients_with_keys(
         model.canonical, model.energies, image_shape, block_index, keys.auth
     )
     vector = reserved_vector(coefficients)
+    delta_scales = delta_allocation_scales(model.values, delta_mode)
     for index, bit in enumerate(bits):
         direction = model.basis[:, index]
         alpha = float(direction.T @ model.cost @ vector)
+        bit_delta = float(delta_embed * delta_scales[index])
         target = qim_embed_scalar(
-            alpha, int(bit), delta_embed, dither(keys.embed, block_index, index, delta_embed)
+            alpha,
+            int(bit),
+            bit_delta,
+            dither(keys.embed, block_index, index, bit_delta),
         )
         vector = vector + (target - alpha) * direction
     return set_reserved_vector(coefficients, vector), bits
@@ -438,6 +449,7 @@ def extract_block_score(
     delta_embed: float,
     basis_mode: BasisMode = "fisher",
     score_mode: ScoreMode = "hamming",
+    delta_mode: DeltaMode = "constant",
 ) -> tuple[float, np.ndarray, np.ndarray]:
     """Return Hamming score, extracted bits, and recomputed authentication bits."""
 
@@ -449,6 +461,7 @@ def extract_block_score(
         delta_embed=delta_embed,
         basis_mode=basis_mode,
         score_mode=score_mode,
+        delta_mode=delta_mode,
     )
 
 
@@ -460,6 +473,7 @@ def extract_block_score_with_keys(
     delta_embed: float,
     basis_mode: BasisMode = "fisher",
     score_mode: ScoreMode = "hamming",
+    delta_mode: DeltaMode = "constant",
 ) -> tuple[float, np.ndarray, np.ndarray]:
     """Return Hamming score using pre-derived V2 keys."""
 
@@ -469,13 +483,44 @@ def extract_block_score_with_keys(
     )
     vector = reserved_vector(coefficients)
     extracted = []
+    delta_scales = delta_allocation_scales(model.values, delta_mode)
     for index in range(PAYLOAD_BITS_PER_BLOCK):
         direction = model.basis[:, index]
         alpha = float(direction.T @ model.cost @ vector)
-        extracted.append(qim_extract_bit(alpha, delta_embed, dither(keys.embed, block_index, index, delta_embed)))
+        bit_delta = float(delta_embed * delta_scales[index])
+        extracted.append(
+            qim_extract_bit(
+                alpha,
+                bit_delta,
+                dither(keys.embed, block_index, index, bit_delta),
+            )
+        )
     extracted_array = np.asarray(extracted, dtype=np.uint8)
     score = bit_mismatch_score(extracted_array, expected, model.values, score_mode)
     return score, extracted_array, expected
+
+
+def delta_allocation_scales(
+    values: np.ndarray,
+    delta_mode: DeltaMode = "constant",
+) -> np.ndarray:
+    """Return per-bit QIM step multipliers with arithmetic mean one."""
+
+    if delta_mode == "constant":
+        return np.ones(PAYLOAD_BITS_PER_BLOCK, dtype=np.float64)
+    if delta_mode == "fisher_sqrt":
+        sensitivity = np.asarray(values, dtype=np.float64)
+        if sensitivity.shape != (PAYLOAD_BITS_PER_BLOCK,):
+            raise ValueError("values must contain one sensitivity per payload bit")
+        if np.any(sensitivity < 0.0):
+            raise ValueError("sensitivities must be non-negative")
+        mean_sensitivity = float(np.mean(sensitivity))
+        if mean_sensitivity <= 0.0:
+            return np.ones(PAYLOAD_BITS_PER_BLOCK, dtype=np.float64)
+        scales = np.sqrt(sensitivity / mean_sensitivity)
+        scales = np.clip(scales, DELTA_ALLOCATION_MIN, DELTA_ALLOCATION_MAX)
+        return scales / float(np.mean(scales))
+    raise ValueError(f"unknown delta mode: {delta_mode}")
 
 
 def bit_mismatch_score(

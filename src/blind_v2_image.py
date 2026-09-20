@@ -9,6 +9,7 @@ from src.blind_v2 import (
     BLOCK_SIZE,
     PAYLOAD_BPP,
     BasisMode,
+    DeltaMode,
     ScoreMode,
     block_tamper_map,
     calibrate_threshold,
@@ -66,6 +67,7 @@ def embed_image(
     master_key: bytes,
     delta_embed: float,
     basis_mode: BasisMode = "fisher",
+    delta_mode: DeltaMode = "constant",
 ) -> ImageEmbedResult:
     """Embed V2 authentication bits into every block of an image."""
 
@@ -85,6 +87,7 @@ def embed_image(
             keys=keys,
             delta_embed=delta_embed,
             basis_mode=basis_mode,
+            delta_mode=delta_mode,
         )
         row = block_row * BLOCK_SIZE
         col = block_col * BLOCK_SIZE
@@ -107,6 +110,7 @@ def verify_image(
     tau: float | None = None,
     basis_mode: BasisMode = "fisher",
     score_mode: ScoreMode = "hamming",
+    delta_mode: DeltaMode = "constant",
 ) -> ImageVerifyResult:
     """Verify an image and optionally threshold the block scores."""
 
@@ -127,6 +131,7 @@ def verify_image(
             delta_embed=delta_embed,
             basis_mode=basis_mode,
             score_mode=score_mode,
+            delta_mode=delta_mode,
         )
         scores[block_row, block_col] = score
         extracted[block_row, block_col, :] = block_extracted
@@ -155,6 +160,7 @@ def calibrate_delta_embed(
     min_psnr_db: float = 40.0,
     max_clean_bit_error_rate: float = 0.01,
     basis_mode: BasisMode = "fisher",
+    delta_mode: DeltaMode = "constant",
 ) -> tuple[float, list[dict[str, float]]]:
     """Choose the smallest candidate satisfying quality and clean decoding."""
 
@@ -166,8 +172,20 @@ def calibrate_delta_embed(
         psnrs = []
         errors = []
         for image in images:
-            embedded = embed_image(image, master_key, candidate, basis_mode)
-            verified = verify_image(embedded.watermarked, master_key, candidate, basis_mode=basis_mode)
+            embedded = embed_image(
+                image,
+                master_key,
+                candidate,
+                basis_mode,
+                delta_mode=delta_mode,
+            )
+            verified = verify_image(
+                embedded.watermarked,
+                master_key,
+                candidate,
+                basis_mode=basis_mode,
+                delta_mode=delta_mode,
+            )
             psnrs.append(embedded.psnr_db)
             errors.append(float(verified.clean_bit_error_rate))
         record = {
@@ -196,6 +214,7 @@ def calibrate_tau_from_clean_images(
     alpha: float = 0.01,
     basis_mode: BasisMode = "fisher",
     score_mode: ScoreMode = "hamming",
+    delta_mode: DeltaMode = "constant",
 ) -> tuple[float, float, np.ndarray]:
     """Calibrate tau from authentic watermarked images."""
 
@@ -207,6 +226,7 @@ def calibrate_tau_from_clean_images(
             delta_embed,
             basis_mode=basis_mode,
             score_mode=score_mode,
+            delta_mode=delta_mode,
         )
         scores.append(verified.scores.ravel())
     clean_scores = np.concatenate(scores)
