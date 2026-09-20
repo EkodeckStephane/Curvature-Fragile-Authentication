@@ -235,9 +235,14 @@ The detector score can be switched for private design diagnostics:
 python scripts/run_blind_v2_real_pilot.py --manifest-csv results\dataset_manifests\dtd_coco_public_pilot_v1.csv --manifest-derived-root path\to\multicorpus_v1_0 --output results\_scratch\blind_v2_manifest_top4.json --calibration-images-per-subcorpus 3 --evaluation-images-per-subcorpus 5 --target-false-positive-rate 0.01 --score-mode fisher_top4
 ```
 
-Available score modes are `hamming`, `fisher_weighted`, and `fisher_top4`.
-The non-default modes are experimental diagnostics for coupling the Fisher
-sensitivity values to the block decision rule.
+Available score modes are `hamming`, `fisher_weighted`, `fisher_top4`, and
+`fisher_reliability`. The non-default modes are experimental diagnostics for
+coupling the Fisher sensitivity values to the block decision rule.
+`fisher_reliability` estimates per-bit clean decoding error rates on the
+calibration images, then scores mismatches with weights proportional to
+`Fisher sensitivity / clean-error risk`. Threshold calibration uses observed
+clean score values, so continuous weighted scores are not restricted to the
+Hamming `k/8` grid.
 
 The embedding allocation can also be switched:
 
@@ -257,8 +262,8 @@ The summarizer converts a private scratch manifest into ignored CSV and
 Markdown tables for engineering review.
 
 When the input manifest contains clean decoding diagnostics, the summarizer
-also writes `clean_bits.csv`, with per-basis and per-bit mismatch counts,
-totals and clean error rates. This supports detector-aware reliability
+also writes `clean_bits.csv`, with per-split, per-basis and per-bit mismatch
+counts, totals and clean error rates. This supports detector-aware reliability
 diagnostics while keeping pixels, local paths and secret material out of the
 public repository.
 

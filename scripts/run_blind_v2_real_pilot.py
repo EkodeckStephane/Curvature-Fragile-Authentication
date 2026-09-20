@@ -429,6 +429,37 @@ def attack_threshold_curve(
     return records
 
 
+def estimate_clean_bit_reliability(
+    watermarked_images: list[np.ndarray],
+    master_key: bytes,
+    delta_embed: float,
+    basis_mode: BasisMode,
+    delta_mode: DeltaMode,
+) -> dict[str, Any]:
+    mismatch_counts = np.zeros(8, dtype=np.int64)
+    total_count = 0
+    for image in watermarked_images:
+        verified = verify_image(
+            image,
+            master_key,
+            delta_embed,
+            basis_mode=basis_mode,
+            score_mode="hamming",
+            delta_mode=delta_mode,
+        )
+        mismatches = verified.extracted_bits != verified.expected_bits
+        mismatch_counts += np.sum(mismatches, axis=(0, 1))
+        total_count += int(mismatches.shape[0] * mismatches.shape[1])
+    return {
+        "mismatchCounts": [int(value) for value in mismatch_counts.tolist()],
+        "totalCount": int(total_count),
+        "errorRates": [
+            float(value / total_count) if total_count else 0.0
+            for value in mismatch_counts.tolist()
+        ],
+    }
+
+
 def summarize_subcorpora(images: list[CorpusImage]) -> dict[str, dict[str, Any]]:
     subcorpora: dict[str, dict[str, Any]] = {}
     for item in images:
@@ -527,6 +558,19 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 for item in calibration_images
             ]
         calibration_watermarked_images = [item.watermarked for item in calibration_embedded]
+        with timer.measure(f"{mode}.estimate_clean_reliability"):
+            calibration_clean_reliability = estimate_clean_bit_reliability(
+                calibration_watermarked_images,
+                master_key,
+                delta_embed,
+                basis_mode=mode,
+                delta_mode=args.delta_mode,
+            )
+        score_clean_error_rates = (
+            np.asarray(calibration_clean_reliability["errorRates"], dtype=np.float64)
+            if args.score_mode == "fisher_reliability"
+            else None
+        )
         with timer.measure(f"{mode}.tau_calibration"):
             tau, validation_fpr, clean_scores = calibrate_tau_from_clean_images(
                 calibration_watermarked_images,
@@ -536,6 +580,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 basis_mode=mode,
                 score_mode=args.score_mode,
                 delta_mode=args.delta_mode,
+                clean_error_rates=score_clean_error_rates,
             )
         with timer.measure(f"{mode}.embed_evaluation"):
             evaluation_embedded = [
@@ -564,6 +609,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                     basis_mode=mode,
                     score_mode=args.score_mode,
                     delta_mode=args.delta_mode,
+                    clean_error_rates=score_clean_error_rates,
                 )
                 evaluation_clean_score_items.append(verified.scores.ravel())
                 bit_mismatches = verified.extracted_bits != verified.expected_bits
@@ -611,6 +657,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                         basis_mode=mode,
                         score_mode=args.score_mode,
                         delta_mode=args.delta_mode,
+                        clean_error_rates=score_clean_error_rates,
                     )
                     score_truth_pairs.append((verified.scores, truth))
                     metrics = block_metrics(verified.tamper_blocks, truth)
@@ -644,6 +691,15 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 "cleanScoreHistogram": {
                     f"{k}/8": int(np.sum(clean_scores == k / 8.0)) for k in range(9)
                 },
+                "calibrationCleanBitMismatchCounts": calibration_clean_reliability[
+                    "mismatchCounts"
+                ],
+                "calibrationCleanBitTotalCount": calibration_clean_reliability[
+                    "totalCount"
+                ],
+                "calibrationCleanBitErrorRates": calibration_clean_reliability[
+                    "errorRates"
+                ],
                 "cleanBitMismatchCounts": [
                     int(value) for value in clean_bit_mismatch_counts.tolist()
                 ],
@@ -767,7 +823,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--target-false-positive-rate", type=float, default=0.0)
     parser.add_argument(
         "--score-mode",
-        choices=("hamming", "fisher_weighted", "fisher_top4"),
+        choices=("hamming", "fisher_weighted", "fisher_top4", "fisher_reliability"),
         default="hamming",
     )
     parser.add_argument(

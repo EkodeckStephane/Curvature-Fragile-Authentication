@@ -111,6 +111,7 @@ def verify_image(
     basis_mode: BasisMode = "fisher",
     score_mode: ScoreMode = "hamming",
     delta_mode: DeltaMode = "constant",
+    clean_error_rates: np.ndarray | None = None,
 ) -> ImageVerifyResult:
     """Verify an image and optionally threshold the block scores."""
 
@@ -132,6 +133,7 @@ def verify_image(
             basis_mode=basis_mode,
             score_mode=score_mode,
             delta_mode=delta_mode,
+            clean_error_rates=clean_error_rates,
         )
         scores[block_row, block_col] = score
         extracted[block_row, block_col, :] = block_extracted
@@ -215,6 +217,7 @@ def calibrate_tau_from_clean_images(
     basis_mode: BasisMode = "fisher",
     score_mode: ScoreMode = "hamming",
     delta_mode: DeltaMode = "constant",
+    clean_error_rates: np.ndarray | None = None,
 ) -> tuple[float, float, np.ndarray]:
     """Calibrate tau from authentic watermarked images."""
 
@@ -227,6 +230,7 @@ def calibrate_tau_from_clean_images(
             basis_mode=basis_mode,
             score_mode=score_mode,
             delta_mode=delta_mode,
+            clean_error_rates=clean_error_rates,
         )
         scores.append(verified.scores.ravel())
     clean_scores = np.concatenate(scores)

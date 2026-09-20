@@ -10,7 +10,7 @@ from typing import Literal
 import numpy as np
 
 BasisMode = Literal["fisher", "smallest", "random", "fixed", "identity_cost"]
-ScoreMode = Literal["hamming", "fisher_weighted", "fisher_top4"]
+ScoreMode = Literal["hamming", "fisher_weighted", "fisher_top4", "fisher_reliability"]
 DeltaMode = Literal["constant", "fisher_sqrt"]
 
 PROTOCOL_ID = b"CFA-blind-v2"
@@ -34,6 +34,7 @@ FREQUENCY_COST_SLOPE = 0.10
 DELTA_FEATURE = 4.0
 DELTA_ALLOCATION_MIN = 0.5
 DELTA_ALLOCATION_MAX = 2.0
+RELIABILITY_RISK_FLOOR = 1.0e-3
 
 
 @dataclass(frozen=True)
@@ -450,6 +451,7 @@ def extract_block_score(
     basis_mode: BasisMode = "fisher",
     score_mode: ScoreMode = "hamming",
     delta_mode: DeltaMode = "constant",
+    clean_error_rates: np.ndarray | None = None,
 ) -> tuple[float, np.ndarray, np.ndarray]:
     """Return Hamming score, extracted bits, and recomputed authentication bits."""
 
@@ -462,6 +464,7 @@ def extract_block_score(
         basis_mode=basis_mode,
         score_mode=score_mode,
         delta_mode=delta_mode,
+        clean_error_rates=clean_error_rates,
     )
 
 
@@ -474,6 +477,7 @@ def extract_block_score_with_keys(
     basis_mode: BasisMode = "fisher",
     score_mode: ScoreMode = "hamming",
     delta_mode: DeltaMode = "constant",
+    clean_error_rates: np.ndarray | None = None,
 ) -> tuple[float, np.ndarray, np.ndarray]:
     """Return Hamming score using pre-derived V2 keys."""
 
@@ -496,7 +500,13 @@ def extract_block_score_with_keys(
             )
         )
     extracted_array = np.asarray(extracted, dtype=np.uint8)
-    score = bit_mismatch_score(extracted_array, expected, model.values, score_mode)
+    score = bit_mismatch_score(
+        extracted_array,
+        expected,
+        model.values,
+        score_mode,
+        clean_error_rates=clean_error_rates,
+    )
     return score, extracted_array, expected
 
 
@@ -528,6 +538,7 @@ def bit_mismatch_score(
     expected: np.ndarray,
     weights: np.ndarray,
     score_mode: ScoreMode = "hamming",
+    clean_error_rates: np.ndarray | None = None,
 ) -> float:
     mismatches = np.asarray(extracted, dtype=np.uint8) != np.asarray(expected, dtype=np.uint8)
     if score_mode == "hamming":
@@ -549,22 +560,58 @@ def bit_mismatch_score(
         order = np.argsort(values)[::-1]
         selected = order[: PAYLOAD_BITS_PER_BLOCK // 2]
         return float(np.mean(mismatches[selected]))
+    if score_mode == "fisher_reliability":
+        values = reliability_adjusted_weights(weights, clean_error_rates)
+        total = float(np.sum(values))
+        return float(np.sum(values * mismatches) / total)
     raise ValueError(f"unknown score mode: {score_mode}")
 
 
+def reliability_adjusted_weights(
+    values: np.ndarray,
+    clean_error_rates: np.ndarray | None,
+    risk_floor: float = RELIABILITY_RISK_FLOOR,
+) -> np.ndarray:
+    """Combine Fisher sensitivity with empirical clean decoding reliability.
+
+    The score weight is proportional to `sensitivity / clean_error_risk`.
+    A positive risk floor keeps weights finite and makes the rule equivalent to
+    Fisher weighting when all calibration bits decode without error.
+    """
+
+    sensitivity = np.asarray(values, dtype=np.float64)
+    if sensitivity.shape != (PAYLOAD_BITS_PER_BLOCK,):
+        raise ValueError("values must contain one sensitivity per payload bit")
+    if np.any(sensitivity < 0.0):
+        raise ValueError("sensitivities must be non-negative")
+    if clean_error_rates is None:
+        raise ValueError("fisher_reliability score requires clean_error_rates")
+    risks = np.asarray(clean_error_rates, dtype=np.float64)
+    if risks.shape != (PAYLOAD_BITS_PER_BLOCK,):
+        raise ValueError("clean_error_rates must contain one value per payload bit")
+    if np.any(risks < 0.0) or np.any(risks > 1.0):
+        raise ValueError("clean_error_rates must be in [0, 1]")
+    if risk_floor <= 0.0:
+        raise ValueError("risk_floor must be positive")
+    adjusted = sensitivity / np.maximum(risks, float(risk_floor))
+    if float(np.sum(adjusted)) <= 0.0:
+        return np.ones(PAYLOAD_BITS_PER_BLOCK, dtype=np.float64)
+    return adjusted
+
+
 def calibrate_threshold(scores: np.ndarray, alpha: float = 0.01) -> tuple[float, float]:
-    """Select the smallest k/8 threshold whose empirical FPR is <= alpha."""
+    """Select the smallest observed-score threshold whose empirical FPR is <= alpha."""
 
     values = np.asarray(scores, dtype=np.float64)
     if values.size == 0:
         raise ValueError("scores must not be empty")
     if not 0.0 <= alpha <= 1.0:
         raise ValueError("alpha must be in [0, 1]")
-    for k in range(PAYLOAD_BITS_PER_BLOCK + 1):
-        tau = k / PAYLOAD_BITS_PER_BLOCK
+    candidates = np.unique(np.concatenate(([0.0], values.ravel())))
+    for tau in np.sort(candidates):
         fpr = float(np.mean(values > tau))
         if fpr <= alpha:
-            return tau, fpr
+            return float(tau), fpr
     raise RuntimeError("threshold grid is exhausted")
 
 

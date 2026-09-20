@@ -49,8 +49,11 @@ class SummarizeRealPilotTests(unittest.TestCase):
         self.assertEqual(modes[0]["basisMode"], "fisher")
         self.assertEqual(attacks[0]["attack"], "center_mean")
         self.assertEqual(timings[0]["phase"], "delta_calibration")
+        self.assertEqual(clean_bits[0]["split"], "calibration")
         self.assertEqual(clean_bits[0]["bitIndex"], "0")
-        self.assertEqual(clean_bits[0]["mismatchCount"], "1")
+        self.assertEqual(clean_bits[0]["mismatchCount"], "2")
+        self.assertEqual(clean_bits[8]["split"], "evaluation")
+        self.assertEqual(clean_bits[8]["mismatchCount"], "1")
         self.assertIn("Promotion ready: `False`", summary)
         self.assertIn("Clean bit reliability", summary)
         self.assertNotIn("masterKeyValue", summary)
@@ -79,6 +82,18 @@ def fake_manifest():
                 "tau": 0.0,
                 "validationFalsePositiveRate": 0.005,
                 "cleanFlaggedBlockCount": 2,
+                "calibrationCleanBitMismatchCounts": [2, 0, 0, 0, 0, 0, 0, 0],
+                "calibrationCleanBitTotalCount": 20,
+                "calibrationCleanBitErrorRates": [
+                    0.1,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                ],
                 "cleanBitMismatchCounts": [1, 0, 0, 0, 0, 0, 0, 0],
                 "cleanBitTotalCount": 10,
                 "cleanBitErrorRates": [0.1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],

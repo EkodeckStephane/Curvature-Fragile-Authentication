@@ -30,6 +30,7 @@ from src.blind_v2 import (
     qim_embed_scalar,
     qim_extract_bit,
     random_p_orthonormal_basis,
+    reliability_adjusted_weights,
     serialize_features,
     to_luminance,
     trim_to_block_grid,
@@ -178,6 +179,32 @@ class BlindV2Tests(unittest.TestCase):
             0.25,
         )
 
+    def test_reliability_adjusted_score_uses_clean_calibration_risk(self) -> None:
+        expected = np.zeros(8, dtype=np.uint8)
+        sensitive_but_unreliable = np.array([1, 0, 0, 0, 0, 0, 0, 0], dtype=np.uint8)
+        less_sensitive_reliable = np.array([0, 1, 0, 0, 0, 0, 0, 0], dtype=np.uint8)
+        fisher_values = np.array([8.0, 4.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0])
+        clean_errors = np.array([0.20, 0.001, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05])
+
+        adjusted = reliability_adjusted_weights(fisher_values, clean_errors)
+        self.assertGreater(adjusted[1], adjusted[0])
+        self.assertGreater(
+            bit_mismatch_score(
+                less_sensitive_reliable,
+                expected,
+                fisher_values,
+                "fisher_reliability",
+                clean_error_rates=clean_errors,
+            ),
+            bit_mismatch_score(
+                sensitive_but_unreliable,
+                expected,
+                fisher_values,
+                "fisher_reliability",
+                clean_error_rates=clean_errors,
+            ),
+        )
+
     def test_prederived_key_block_api_matches_public_api(self) -> None:
         public_coeffs, public_bits = embed_block_coefficients(
             self.coefficients,
@@ -269,6 +296,11 @@ class BlindV2Tests(unittest.TestCase):
         tampered = block_tamper_map(np.array([[0.0, 0.5]]), tau)
         np.testing.assert_array_equal(tampered, np.array([[False, True]]))
         self.assertEqual(expand_block_map(tampered).shape, (16, 32))
+
+    def test_threshold_calibration_accepts_continuous_scores(self) -> None:
+        tau, fpr = calibrate_threshold(np.array([0.0, 0.03, 0.07, 0.11]), alpha=0.25)
+        self.assertEqual(tau, 0.07)
+        self.assertEqual(fpr, 0.25)
 
     def test_public_constants_match_v2_payload(self) -> None:
         self.assertEqual(len(RESERVED_COORDS), 8)

@@ -68,21 +68,37 @@ def timing_rows(manifest: dict[str, Any]) -> list[dict[str, Any]]:
 def clean_bit_rows(manifest: dict[str, Any]) -> list[dict[str, Any]]:
     rows = []
     for baseline in manifest["baselines"]:
-        counts = baseline.get("cleanBitMismatchCounts")
-        rates = baseline.get("cleanBitErrorRates")
-        total = baseline.get("cleanBitTotalCount")
-        if counts is None or rates is None or total is None:
-            continue
-        for bit_index, (count, rate) in enumerate(zip(counts, rates)):
-            rows.append(
-                {
-                    "basisMode": baseline["basisMode"],
-                    "bitIndex": bit_index,
-                    "mismatchCount": count,
-                    "totalCount": total,
-                    "errorRate": rate,
-                }
-            )
+        field_sets = (
+            (
+                "calibration",
+                "calibrationCleanBitMismatchCounts",
+                "calibrationCleanBitErrorRates",
+                "calibrationCleanBitTotalCount",
+            ),
+            (
+                "evaluation",
+                "cleanBitMismatchCounts",
+                "cleanBitErrorRates",
+                "cleanBitTotalCount",
+            ),
+        )
+        for split, count_key, rate_key, total_key in field_sets:
+            counts = baseline.get(count_key)
+            rates = baseline.get(rate_key)
+            total = baseline.get(total_key)
+            if counts is None or rates is None or total is None:
+                continue
+            for bit_index, (count, rate) in enumerate(zip(counts, rates)):
+                rows.append(
+                    {
+                        "split": split,
+                        "basisMode": baseline["basisMode"],
+                        "bitIndex": bit_index,
+                        "mismatchCount": count,
+                        "totalCount": total,
+                        "errorRate": rate,
+                    }
+                )
     return rows
 
 
@@ -165,13 +181,13 @@ def markdown_summary(
                 "",
                 "## Clean bit reliability",
                 "",
-                "| Basis | bit | mismatches | total | error rate |",
-                "|---|---:|---:|---:|---:|",
+                "| Split | basis | bit | mismatches | total | error rate |",
+                "|---|---|---:|---:|---:|---:|",
             ]
         )
         for row in clean_bits:
             lines.append(
-                "| {basisMode} | {bitIndex} | {mismatchCount} | {totalCount} | "
+                "| {split} | {basisMode} | {bitIndex} | {mismatchCount} | {totalCount} | "
                 "{errorRate:.6f} |".format(**row)
             )
 

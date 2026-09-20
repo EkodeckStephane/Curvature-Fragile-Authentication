@@ -119,7 +119,7 @@ class BlindV2RealPilotTests(unittest.TestCase):
                 min_psnr_db=30.0,
                 max_clean_bit_error_rate=0.01,
                 target_false_positive_rate=0.0,
-                score_mode="hamming",
+                score_mode="fisher_reliability",
                 delta_mode="constant",
                 calibration_basis_mode="fisher",
                 basis_modes=["fisher"],
@@ -143,6 +143,13 @@ class BlindV2RealPilotTests(unittest.TestCase):
         self.assertEqual(
             len(written["baselines"][0]["calibrationCleanThresholdCurve"]), 9
         )
+        self.assertEqual(
+            len(written["baselines"][0]["calibrationCleanBitMismatchCounts"]), 8
+        )
+        self.assertEqual(
+            len(written["baselines"][0]["calibrationCleanBitErrorRates"]), 8
+        )
+        self.assertGreater(written["baselines"][0]["calibrationCleanBitTotalCount"], 0)
         self.assertEqual(len(written["baselines"][0]["cleanBitMismatchCounts"]), 8)
         self.assertEqual(len(written["baselines"][0]["cleanBitErrorRates"]), 8)
         self.assertGreater(written["baselines"][0]["cleanBitTotalCount"], 0)
