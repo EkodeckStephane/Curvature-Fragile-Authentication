@@ -236,6 +236,16 @@ python scripts/summarize_real_pilot.py --input results\_scratch\blind_v2_real_pi
 The summarizer converts a private scratch manifest into ignored CSV and
 Markdown tables for engineering review.
 
+For paired Fisher-vs-baseline diagnostics on the same evaluated images, run:
+
+```powershell
+python scripts/paired_compare_real_pilot.py --input results\_scratch\blind_v2_manifest_pilot.json --output-dir results\_scratch\blind_v2_manifest_pilot_paired
+```
+
+The paired comparison reports per-attack and clean-image deltas, bootstrap
+intervals and sign-flip permutation p-values. These diagnostics remain private
+until a public analysis plan and promoted result manifest are frozen.
+
 ## Editorial target
 
 The first target is IEEE Transactions on Information Forensics and Security.
