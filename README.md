@@ -180,7 +180,7 @@ When a derived multicorpus was produced with deterministic source-dependent
 filenames, reconstruct the local identity map with:
 
 ```powershell
-python scripts/map_multicorpus_identities.py --derived-root path\to\multicorpus_v1_0 --output-csv results\_scratch\multicorpus_identity_map.csv --bossbase-root path\to\BOSSbase --bows2-root path\to\bows2\cover --dynacis-root path\to\processed_dataset_root
+python scripts/map_multicorpus_identities.py --derived-root path\to\multicorpus_v1_0 --output-csv results\_scratch\multicorpus_identity_map.csv --bossbase-root path\to\BOSSbase --bows2-root path\to\bows2\cover --dynacis-root path\to\external_processed_root
 ```
 
 The command records hashes, dimensions, matched source identifiers, split
@@ -218,6 +218,16 @@ This command exercises the V2 detector on local images and writes an ignored
 engineering manifest. Delta and threshold calibration use the calibration
 split; clean and attack metrics use the evaluation split. The manifest is
 marked `promotionReady: false` until the dataset manifest is complete.
+
+For the restricted DTD+COCO pilot manifest, resolve only the declared images:
+
+```powershell
+python scripts/run_blind_v2_real_pilot.py --manifest-csv results\dataset_manifests\dtd_coco_public_pilot_v1.csv --manifest-derived-root path\to\multicorpus_v1_0 --output results\_scratch\blind_v2_manifest_pilot.json --calibration-images-per-subcorpus 1 --evaluation-images-per-subcorpus 1 --hash-files
+```
+
+When `--manifest-derived-root` is provided, the runner verifies the manifest
+SHA-256 hashes for the local derived files. Alternatively, official dataset
+roots can be supplied with `--dtd-root` and `--coco-root`.
 
 ```powershell
 python scripts/summarize_real_pilot.py --input results\_scratch\blind_v2_real_pilot.json --output-dir results\_scratch\blind_v2_real_pilot_summary

@@ -58,6 +58,44 @@ class BlindV2RealPilotTests(unittest.TestCase):
         self.assertEqual([path.name for path in calibration["sample"]], ["0.png"])
         self.assertEqual([path.name for path in evaluation["sample"]], ["1.png", "2.png"])
 
+    def test_manifest_splits_resolve_derived_images_and_verify_hashes(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            derived_root = root / "derived"
+            subcorpus = derived_root / "dtd_textures"
+            subcorpus.mkdir(parents=True)
+            first = subcorpus / "a.png"
+            second = subcorpus / "b.png"
+            Image.new("L", (64, 64), 64).save(first)
+            Image.new("L", (64, 64), 128).save(second)
+            manifest = root / "manifest.csv"
+            manifest.write_text(
+                "\n".join(
+                    [
+                        "record_id,dataset,subcorpus,source_split,source_dataset_url,source_version,source_citation,source_reuse_statement,source_image_id,source_file_name,width,height,derived_artifact_id,derived_sha256,license_id,license_name,license_url,coco_url,provenance_status,redistribution_policy",
+                        f"dtd_textures:a.png,DTD textures,dtd_textures,test_final,https://example.test,dtd-r1.0.1,citation,research,grid/grid_0001.jpg,,64,64,a.png,{self.runner.sha256_file(first)},,,,,identity-citation-and-reuse-statement-pinned,policy",
+                        f"dtd_textures:b.png,DTD textures,dtd_textures,test_final,https://example.test,dtd-r1.0.1,citation,research,grid/grid_0002.jpg,,64,64,b.png,{self.runner.sha256_file(second)},,,,,identity-citation-and-reuse-statement-pinned,policy",
+                    ]
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+
+            calibration, evaluation, pilot_mode = self.runner.load_manifest_image_splits(
+                manifest,
+                manifest_derived_root=derived_root,
+                calibration_images_per_subcorpus=1,
+                evaluation_images_per_subcorpus=1,
+                hash_files=True,
+            )
+
+        self.assertEqual(pilot_mode, "manifest_restricted_separated_calibration_evaluation")
+        self.assertEqual(calibration[0].record_id, "dtd_textures:a.png")
+        self.assertEqual(evaluation[0].record_id, "dtd_textures:b.png")
+        self.assertEqual(evaluation[0].relative_path, "dtd_textures:b.png")
+        self.assertEqual(evaluation[0].source_image_id, "grid/grid_0002.jpg")
+        self.assertIsNotNone(evaluation[0].sha256)
+
     def test_run_writes_private_scratch_manifest_without_key_or_pixels(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory) / "corpus"
@@ -67,6 +105,10 @@ class BlindV2RealPilotTests(unittest.TestCase):
             Image.new("L", (64, 64), 128).save(root / "sample" / "y.png")
             args = Namespace(
                 root=root,
+                manifest_csv=None,
+                manifest_derived_root=None,
+                dtd_root=None,
+                coco_root=None,
                 output=output,
                 max_images_per_subcorpus=2,
                 calibration_images_per_subcorpus=1,
