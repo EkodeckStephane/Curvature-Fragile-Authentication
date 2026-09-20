@@ -11,10 +11,11 @@ from src.blind_v2 import (
     BasisMode,
     block_tamper_map,
     calibrate_threshold,
+    derive_keys,
     dct2,
-    embed_block_coefficients,
+    embed_block_coefficients_with_keys,
     expand_block_map,
-    extract_block_score,
+    extract_block_score_with_keys,
     idct2,
     trim_to_block_grid,
 )
@@ -72,14 +73,15 @@ def embed_image(
     block_rows = original.shape[0] // BLOCK_SIZE
     block_cols = original.shape[1] // BLOCK_SIZE
     bits = np.zeros((block_rows, block_cols, 8), dtype=np.uint8)
+    keys = derive_keys(master_key)
 
     for block_row, block_col, block in image_blocks(original):
         coefficients = dct2(block)
-        embedded_coeffs, block_bits = embed_block_coefficients(
+        embedded_coeffs, block_bits = embed_block_coefficients_with_keys(
             coefficients,
             image_shape=original.shape,
             block_index=(block_row, block_col),
-            master_key=master_key,
+            keys=keys,
             delta_embed=delta_embed,
             basis_mode=basis_mode,
         )
@@ -112,13 +114,14 @@ def verify_image(
     scores = np.zeros((block_rows, block_cols), dtype=np.float64)
     extracted = np.zeros((block_rows, block_cols, 8), dtype=np.uint8)
     expected = np.zeros((block_rows, block_cols, 8), dtype=np.uint8)
+    keys = derive_keys(master_key)
 
     for block_row, block_col, block in image_blocks(received):
-        score, block_extracted, block_expected = extract_block_score(
+        score, block_extracted, block_expected = extract_block_score_with_keys(
             dct2(block),
             image_shape=received.shape,
             block_index=(block_row, block_col),
-            master_key=master_key,
+            keys=keys,
             delta_embed=delta_embed,
             basis_mode=basis_mode,
         )

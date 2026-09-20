@@ -394,7 +394,26 @@ def embed_block_coefficients(
 ) -> tuple[np.ndarray, np.ndarray]:
     """Embed one block's authentication bits into reserved DCT coefficients."""
 
-    keys = derive_keys(master_key)
+    return embed_block_coefficients_with_keys(
+        coefficients,
+        image_shape=image_shape,
+        block_index=block_index,
+        keys=derive_keys(master_key),
+        delta_embed=delta_embed,
+        basis_mode=basis_mode,
+    )
+
+
+def embed_block_coefficients_with_keys(
+    coefficients: np.ndarray,
+    image_shape: tuple[int, int],
+    block_index: tuple[int, int],
+    keys: V2Keys,
+    delta_embed: float,
+    basis_mode: BasisMode = "fisher",
+) -> tuple[np.ndarray, np.ndarray]:
+    """Embed one block's authentication bits with pre-derived V2 keys."""
+
     model = build_block_model(coefficients, basis_mode, keys, block_index)
     bits = authentication_bits(
         model.canonical, model.energies, image_shape, block_index, keys.auth
@@ -420,7 +439,26 @@ def extract_block_score(
 ) -> tuple[float, np.ndarray, np.ndarray]:
     """Return Hamming score, extracted bits, and recomputed authentication bits."""
 
-    keys = derive_keys(master_key)
+    return extract_block_score_with_keys(
+        coefficients,
+        image_shape=image_shape,
+        block_index=block_index,
+        keys=derive_keys(master_key),
+        delta_embed=delta_embed,
+        basis_mode=basis_mode,
+    )
+
+
+def extract_block_score_with_keys(
+    coefficients: np.ndarray,
+    image_shape: tuple[int, int],
+    block_index: tuple[int, int],
+    keys: V2Keys,
+    delta_embed: float,
+    basis_mode: BasisMode = "fisher",
+) -> tuple[float, np.ndarray, np.ndarray]:
+    """Return Hamming score using pre-derived V2 keys."""
+
     model = build_block_model(coefficients, basis_mode, keys, block_index)
     expected = authentication_bits(
         model.canonical, model.energies, image_shape, block_index, keys.auth

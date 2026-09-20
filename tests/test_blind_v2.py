@@ -17,7 +17,10 @@ from src.blind_v2 import (
     dct2,
     dither,
     embed_block_coefficients,
+    embed_block_coefficients_with_keys,
     expand_block_map,
+    extract_block_score,
+    extract_block_score_with_keys,
     fisher_cost_matrices,
     idct2,
     key_id,
@@ -113,6 +116,46 @@ class BlindV2Tests(unittest.TestCase):
         np.testing.assert_array_equal(extracted, expected)
         np.testing.assert_array_equal(embedded_bits, expected)
 
+    def test_prederived_key_block_api_matches_public_api(self) -> None:
+        public_coeffs, public_bits = embed_block_coefficients(
+            self.coefficients,
+            image_shape=(16, 16),
+            block_index=(0, 0),
+            master_key=self.master,
+            delta_embed=8.0,
+            basis_mode="random",
+        )
+        keyed_coeffs, keyed_bits = embed_block_coefficients_with_keys(
+            self.coefficients,
+            image_shape=(16, 16),
+            block_index=(0, 0),
+            keys=self.keys,
+            delta_embed=8.0,
+            basis_mode="random",
+        )
+        np.testing.assert_allclose(public_coeffs, keyed_coeffs)
+        np.testing.assert_array_equal(public_bits, keyed_bits)
+
+        public_score = extract_block_score(
+            public_coeffs,
+            image_shape=(16, 16),
+            block_index=(0, 0),
+            master_key=self.master,
+            delta_embed=8.0,
+            basis_mode="random",
+        )
+        keyed_score = extract_block_score_with_keys(
+            keyed_coeffs,
+            image_shape=(16, 16),
+            block_index=(0, 0),
+            keys=self.keys,
+            delta_embed=8.0,
+            basis_mode="random",
+        )
+        self.assertEqual(public_score[0], keyed_score[0])
+        np.testing.assert_array_equal(public_score[1], keyed_score[1])
+        np.testing.assert_array_equal(public_score[2], keyed_score[2])
+
     def test_basis_modes_are_p_orthonormal_or_declared(self) -> None:
         for mode in ("fisher", "smallest", "random", "fixed", "identity_cost"):
             model = build_block_model(
@@ -172,8 +215,6 @@ class BlindV2Tests(unittest.TestCase):
 
 
 def extract_score_for_test(coefficients: np.ndarray, master: bytes, delta_embed: float):
-    from src.blind_v2 import extract_block_score
-
     return extract_block_score(
         coefficients,
         image_shape=(16, 16),
