@@ -103,6 +103,12 @@ class BlindV2RealPilotTests(unittest.TestCase):
             len(written["baselines"][0]["evaluationCleanThresholdCurve"]), 9
         )
         self.assertEqual(len(written["baselines"][0]["attacks"][0]["thresholdCurve"]), 9)
+        self.assertIn("timingSeconds", written)
+        self.assertGreaterEqual(written["timingSeconds"]["load_corpus"], 0.0)
+        self.assertGreaterEqual(written["timingSeconds"]["delta_calibration"], 0.0)
+        self.assertGreaterEqual(
+            written["timingSeconds"]["fisher.verify_clean_evaluation"], 0.0
+        )
 
 
 if __name__ == "__main__":

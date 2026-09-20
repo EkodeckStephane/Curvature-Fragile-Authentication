@@ -5,8 +5,10 @@ import hashlib
 import json
 import platform
 import sys
+from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
+from time import perf_counter
 from typing import Any
 
 import numpy as np
@@ -54,6 +56,23 @@ class CorpusImage:
     original_shape: tuple[int, int]
     trimmed_shape: tuple[int, int]
     sha256: str | None = None
+
+
+@dataclass
+class PhaseTimer:
+    records: dict[str, float]
+
+    @contextmanager
+    def measure(self, name: str):
+        start = perf_counter()
+        try:
+            yield
+        finally:
+            elapsed = perf_counter() - start
+            self.records[name] = self.records.get(name, 0.0) + elapsed
+
+    def rounded(self) -> dict[str, float]:
+        return {name: round(value, 6) for name, value in sorted(self.records.items())}
 
 
 def sha256_file(path: Path) -> str:
@@ -241,35 +260,37 @@ def summarize_subcorpora(images: list[CorpusImage]) -> dict[str, dict[str, Any]]
 
 
 def run(args: argparse.Namespace) -> dict[str, Any]:
+    timer = PhaseTimer({})
     root = args.root.resolve()
-    split_requested = (
-        getattr(args, "calibration_images_per_subcorpus", None) is not None
-        or getattr(args, "evaluation_images_per_subcorpus", None) is not None
-    )
-    if split_requested:
-        if (
-            getattr(args, "calibration_images_per_subcorpus", None) is None
-            or getattr(args, "evaluation_images_per_subcorpus", None) is None
-        ):
-            raise ValueError(
-                "calibration_images_per_subcorpus and evaluation_images_per_subcorpus "
-                "must be provided together"
+    with timer.measure("load_corpus"):
+        split_requested = (
+            getattr(args, "calibration_images_per_subcorpus", None) is not None
+            or getattr(args, "evaluation_images_per_subcorpus", None) is not None
+        )
+        if split_requested:
+            if (
+                getattr(args, "calibration_images_per_subcorpus", None) is None
+                or getattr(args, "evaluation_images_per_subcorpus", None) is None
+            ):
+                raise ValueError(
+                    "calibration_images_per_subcorpus and evaluation_images_per_subcorpus "
+                    "must be provided together"
+                )
+            calibration_images, evaluation_images = load_corpus_image_splits(
+                root,
+                calibration_images_per_subcorpus=args.calibration_images_per_subcorpus,
+                evaluation_images_per_subcorpus=args.evaluation_images_per_subcorpus,
+                hash_files=args.hash_files,
             )
-        calibration_images, evaluation_images = load_corpus_image_splits(
-            root,
-            calibration_images_per_subcorpus=args.calibration_images_per_subcorpus,
-            evaluation_images_per_subcorpus=args.evaluation_images_per_subcorpus,
-            hash_files=args.hash_files,
-        )
-        pilot_mode = "engineering_scratch_separated_calibration_evaluation"
-    else:
-        calibration_images = load_corpus_images(
-            root,
-            max_images_per_subcorpus=args.max_images_per_subcorpus,
-            hash_files=args.hash_files,
-        )
-        evaluation_images = calibration_images
-        pilot_mode = "engineering_scratch_same_images_for_calibration_and_attack"
+            pilot_mode = "engineering_scratch_separated_calibration_evaluation"
+        else:
+            calibration_images = load_corpus_images(
+                root,
+                max_images_per_subcorpus=args.max_images_per_subcorpus,
+                hash_files=args.hash_files,
+            )
+            evaluation_images = calibration_images
+            pilot_mode = "engineering_scratch_same_images_for_calibration_and_attack"
 
     calibration_arrays = [item.array for item in calibration_images]
     master_key = master_key_from_seed(args.master_key_seed)
@@ -277,88 +298,94 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     basis_modes = list(args.basis_modes)
     attacks = list(args.attacks)
 
-    delta_embed, delta_records = calibrate_delta_embed(
-        calibration_arrays,
-        master_key,
-        candidates,
-        min_psnr_db=args.min_psnr_db,
-        max_clean_bit_error_rate=args.max_clean_bit_error_rate,
-        basis_mode=args.calibration_basis_mode,
-    )
+    with timer.measure("delta_calibration"):
+        delta_embed, delta_records = calibrate_delta_embed(
+            calibration_arrays,
+            master_key,
+            candidates,
+            min_psnr_db=args.min_psnr_db,
+            max_clean_bit_error_rate=args.max_clean_bit_error_rate,
+            basis_mode=args.calibration_basis_mode,
+        )
 
     baseline_records = []
     for mode in basis_modes:
-        calibration_embedded = [
-            embed_image(item.array, master_key, delta_embed, basis_mode=mode)
-            for item in calibration_images
-        ]
+        with timer.measure(f"{mode}.embed_calibration"):
+            calibration_embedded = [
+                embed_image(item.array, master_key, delta_embed, basis_mode=mode)
+                for item in calibration_images
+            ]
         calibration_watermarked_images = [item.watermarked for item in calibration_embedded]
-        tau, validation_fpr, clean_scores = calibrate_tau_from_clean_images(
-            calibration_watermarked_images,
-            master_key,
-            delta_embed,
-            alpha=args.target_false_positive_rate,
-            basis_mode=mode,
-        )
-        evaluation_embedded = [
-            embed_image(item.array, master_key, delta_embed, basis_mode=mode)
-            for item in evaluation_images
-        ]
+        with timer.measure(f"{mode}.tau_calibration"):
+            tau, validation_fpr, clean_scores = calibrate_tau_from_clean_images(
+                calibration_watermarked_images,
+                master_key,
+                delta_embed,
+                alpha=args.target_false_positive_rate,
+                basis_mode=mode,
+            )
+        with timer.measure(f"{mode}.embed_evaluation"):
+            evaluation_embedded = [
+                embed_image(item.array, master_key, delta_embed, basis_mode=mode)
+                for item in evaluation_images
+            ]
 
         clean_records = []
         evaluation_clean_score_items = []
-        for index, embedded_item in enumerate(evaluation_embedded):
-            source_item = evaluation_images[index]
-            verified = verify_image(
-                embedded_item.watermarked,
-                master_key,
-                delta_embed,
-                tau=tau,
-                basis_mode=mode,
-            )
-            evaluation_clean_score_items.append(verified.scores.ravel())
-            clean_records.append(
-                {
-                    "imageIndex": index,
-                    "subcorpus": source_item.subcorpus,
-                    "relativePath": source_item.relative_path,
-                    "sha256": source_item.sha256,
-                    "originalShape": list(source_item.original_shape),
-                    "trimmedShape": list(source_item.trimmed_shape),
-                    "psnrDb": float(embedded_item.psnr_db),
-                    "cleanBitErrorRate": float(verified.clean_bit_error_rate),
-                    "flaggedBlockCount": int(np.sum(verified.tamper_blocks)),
-                    "blockCount": int(verified.scores.size),
-                    "maxBlockScore": float(np.max(verified.scores)),
-                }
-            )
-
-        attack_records = []
-        for attack in attacks:
-            metric_items = []
-            score_truth_pairs = []
+        with timer.measure(f"{mode}.verify_clean_evaluation"):
             for index, embedded_item in enumerate(evaluation_embedded):
-                source = evaluation_embedded[(index + 1) % len(evaluation_embedded)].watermarked
-                attacked, truth = apply_synthetic_attack(
-                    embedded_item.watermarked,
-                    attack,
-                    source=source,
-                )
+                source_item = evaluation_images[index]
                 verified = verify_image(
-                    attacked,
+                    embedded_item.watermarked,
                     master_key,
                     delta_embed,
                     tau=tau,
                     basis_mode=mode,
                 )
-                score_truth_pairs.append((verified.scores, truth))
-                metrics = block_metrics(verified.tamper_blocks, truth)
-                metrics["imageIndex"] = index
-                metrics["subcorpus"] = evaluation_images[index].subcorpus
-                metrics["relativePath"] = evaluation_images[index].relative_path
-                metrics["truthBlockCount"] = int(np.sum(truth))
-                metrics["predictedBlockCount"] = int(np.sum(verified.tamper_blocks))
-                metric_items.append(metrics)
+                evaluation_clean_score_items.append(verified.scores.ravel())
+                clean_records.append(
+                    {
+                        "imageIndex": index,
+                        "subcorpus": source_item.subcorpus,
+                        "relativePath": source_item.relative_path,
+                        "sha256": source_item.sha256,
+                        "originalShape": list(source_item.original_shape),
+                        "trimmedShape": list(source_item.trimmed_shape),
+                        "psnrDb": float(embedded_item.psnr_db),
+                        "cleanBitErrorRate": float(verified.clean_bit_error_rate),
+                        "flaggedBlockCount": int(np.sum(verified.tamper_blocks)),
+                        "blockCount": int(verified.scores.size),
+                        "maxBlockScore": float(np.max(verified.scores)),
+                    }
+                )
+
+        attack_records = []
+        for attack in attacks:
+            metric_items = []
+            score_truth_pairs = []
+            with timer.measure(f"{mode}.attack.{attack}"):
+                for index, embedded_item in enumerate(evaluation_embedded):
+                    source = evaluation_embedded[(index + 1) % len(evaluation_embedded)].watermarked
+                    attacked, truth = apply_synthetic_attack(
+                        embedded_item.watermarked,
+                        attack,
+                        source=source,
+                    )
+                    verified = verify_image(
+                        attacked,
+                        master_key,
+                        delta_embed,
+                        tau=tau,
+                        basis_mode=mode,
+                    )
+                    score_truth_pairs.append((verified.scores, truth))
+                    metrics = block_metrics(verified.tamper_blocks, truth)
+                    metrics["imageIndex"] = index
+                    metrics["subcorpus"] = evaluation_images[index].subcorpus
+                    metrics["relativePath"] = evaluation_images[index].relative_path
+                    metrics["truthBlockCount"] = int(np.sum(truth))
+                    metrics["predictedBlockCount"] = int(np.sum(verified.tamper_blocks))
+                    metric_items.append(metrics)
             attack_records.append(
                 {
                     "attack": attack,
@@ -427,6 +454,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "targetFalsePositiveRate": float(args.target_false_positive_rate),
         "minPsnrDb": float(args.min_psnr_db),
         "maxCleanBitErrorRate": float(args.max_clean_bit_error_rate),
+        "timingSeconds": timer.rounded(),
         "baselines": baseline_records,
     }
 
