@@ -188,6 +188,16 @@ labels, and original paths when the upstream raw or processed roots are
 available. The resulting CSV remains private unless every retained dataset has
 publishable source, version, license, split, and citation metadata.
 
+After the local identity map exists, enrich it with available dataset metadata:
+
+```powershell
+python scripts/enrich_multicorpus_metadata.py --identity-map results\_scratch\multicorpus_identity_map.csv --output-csv results\_scratch\multicorpus_identity_map_enriched.csv --coco-annotations path\to\annotations\instances_val2017.json
+```
+
+For COCO, the command attaches image IDs and license names/URLs from the
+official annotation JSON. For DTD, it records the official source page, package
+version and citation used by the provenance gate.
+
 ### Run a private real-image scratch pilot
 
 ```powershell
