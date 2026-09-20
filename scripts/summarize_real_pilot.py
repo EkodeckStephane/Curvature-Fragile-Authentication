@@ -134,6 +134,8 @@ def markdown_summary(
         f"- Score mode: `{manifest.get('scoreMode')}`",
         f"- Delta mode: `{manifest.get('deltaMode')}`",
         f"- Auth feature step: {manifest.get('authFeatureStep')}",
+        f"- Auth feature mode: `{manifest.get('authFeatureMode')}`",
+        f"- Auth feature band count: {manifest.get('authFeatureBandCount')}",
         f"- Data copied: `{manifest.get('dataCopied')}`",
         f"- Master key stored: `{manifest.get('masterKeyStored')}`",
         "",

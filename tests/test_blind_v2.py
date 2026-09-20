@@ -32,7 +32,9 @@ from src.blind_v2 import (
     qim_extract_bit,
     random_p_orthonormal_basis,
     reliability_adjusted_weights,
+    sensitive_feature_radials,
     serialize_features,
+    serialize_sensitive_band_features,
     to_luminance,
     trim_to_block_grid,
 )
@@ -168,6 +170,47 @@ class BlindV2Tests(unittest.TestCase):
             master_key=self.master,
             delta_embed=8.0,
             auth_feature_step=DELTA_FEATURE * 2.0,
+        )
+
+        self.assertEqual(score, 0.0)
+        np.testing.assert_array_equal(extracted, expected)
+        np.testing.assert_array_equal(embedded_bits, expected)
+
+    def test_sensitive_band_authentication_selects_largest_sensitivity_radials(self) -> None:
+        energies = np.array([8.0, 8.0, 1.0, 1.0, 4.0, 4.0, 2.0, 2.0])
+        self.assertEqual(sensitive_feature_radials(energies, band_count=2), (6, 8))
+
+        model = build_block_model(self.coefficients)
+        full = serialize_features(model.canonical, model.energies, (16, 16), (0, 0))
+        selected = serialize_sensitive_band_features(
+            model.canonical,
+            model.energies,
+            (16, 16),
+            (0, 0),
+            band_count=2,
+        )
+        self.assertNotEqual(full, selected)
+
+    def test_sensitive_band_authentication_round_trips_clean_block(self) -> None:
+        embedded, embedded_bits = embed_block_coefficients(
+            self.coefficients,
+            image_shape=(16, 16),
+            block_index=(0, 0),
+            master_key=self.master,
+            delta_embed=8.0,
+            auth_feature_step=16.0,
+            auth_feature_mode="sensitive_bands",
+            auth_feature_band_count=2,
+        )
+        score, extracted, expected = extract_block_score(
+            embedded,
+            image_shape=(16, 16),
+            block_index=(0, 0),
+            master_key=self.master,
+            delta_embed=8.0,
+            auth_feature_step=16.0,
+            auth_feature_mode="sensitive_bands",
+            auth_feature_band_count=2,
         )
 
         self.assertEqual(score, 0.0)

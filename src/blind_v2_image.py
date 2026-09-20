@@ -9,6 +9,7 @@ from src.blind_v2 import (
     BLOCK_SIZE,
     DELTA_FEATURE,
     PAYLOAD_BPP,
+    AuthFeatureMode,
     BasisMode,
     DeltaMode,
     ScoreMode,
@@ -70,6 +71,8 @@ def embed_image(
     basis_mode: BasisMode = "fisher",
     delta_mode: DeltaMode = "constant",
     auth_feature_step: float = DELTA_FEATURE,
+    auth_feature_mode: AuthFeatureMode = "full",
+    auth_feature_band_count: int = 2,
 ) -> ImageEmbedResult:
     """Embed V2 authentication bits into every block of an image."""
 
@@ -91,6 +94,8 @@ def embed_image(
             basis_mode=basis_mode,
             delta_mode=delta_mode,
             auth_feature_step=auth_feature_step,
+            auth_feature_mode=auth_feature_mode,
+            auth_feature_band_count=auth_feature_band_count,
         )
         row = block_row * BLOCK_SIZE
         col = block_col * BLOCK_SIZE
@@ -116,6 +121,8 @@ def verify_image(
     delta_mode: DeltaMode = "constant",
     clean_error_rates: np.ndarray | None = None,
     auth_feature_step: float = DELTA_FEATURE,
+    auth_feature_mode: AuthFeatureMode = "full",
+    auth_feature_band_count: int = 2,
 ) -> ImageVerifyResult:
     """Verify an image and optionally threshold the block scores."""
 
@@ -139,6 +146,8 @@ def verify_image(
             delta_mode=delta_mode,
             clean_error_rates=clean_error_rates,
             auth_feature_step=auth_feature_step,
+            auth_feature_mode=auth_feature_mode,
+            auth_feature_band_count=auth_feature_band_count,
         )
         scores[block_row, block_col] = score
         extracted[block_row, block_col, :] = block_extracted
@@ -169,6 +178,8 @@ def calibrate_delta_embed(
     basis_mode: BasisMode = "fisher",
     delta_mode: DeltaMode = "constant",
     auth_feature_step: float = DELTA_FEATURE,
+    auth_feature_mode: AuthFeatureMode = "full",
+    auth_feature_band_count: int = 2,
 ) -> tuple[float, list[dict[str, float]]]:
     """Choose the smallest candidate satisfying quality and clean decoding."""
 
@@ -187,6 +198,8 @@ def calibrate_delta_embed(
                 basis_mode,
                 delta_mode=delta_mode,
                 auth_feature_step=auth_feature_step,
+                auth_feature_mode=auth_feature_mode,
+                auth_feature_band_count=auth_feature_band_count,
             )
             verified = verify_image(
                 embedded.watermarked,
@@ -195,6 +208,8 @@ def calibrate_delta_embed(
                 basis_mode=basis_mode,
                 delta_mode=delta_mode,
                 auth_feature_step=auth_feature_step,
+                auth_feature_mode=auth_feature_mode,
+                auth_feature_band_count=auth_feature_band_count,
             )
             psnrs.append(embedded.psnr_db)
             errors.append(float(verified.clean_bit_error_rate))
@@ -227,6 +242,8 @@ def calibrate_tau_from_clean_images(
     delta_mode: DeltaMode = "constant",
     clean_error_rates: np.ndarray | None = None,
     auth_feature_step: float = DELTA_FEATURE,
+    auth_feature_mode: AuthFeatureMode = "full",
+    auth_feature_band_count: int = 2,
 ) -> tuple[float, float, np.ndarray]:
     """Calibrate tau from authentic watermarked images."""
 
@@ -241,6 +258,8 @@ def calibrate_tau_from_clean_images(
             delta_mode=delta_mode,
             clean_error_rates=clean_error_rates,
             auth_feature_step=auth_feature_step,
+            auth_feature_mode=auth_feature_mode,
+            auth_feature_band_count=auth_feature_band_count,
         )
         scores.append(verified.scores.ravel())
     clean_scores = np.concatenate(scores)

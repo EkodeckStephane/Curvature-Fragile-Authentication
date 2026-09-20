@@ -56,6 +56,7 @@ class SummarizeRealPilotTests(unittest.TestCase):
         self.assertEqual(clean_bits[8]["mismatchCount"], "1")
         self.assertIn("Promotion ready: `False`", summary)
         self.assertIn("Auth feature step: 8.0", summary)
+        self.assertIn("Auth feature mode: `sensitive_bands`", summary)
         self.assertIn("Clean bit reliability", summary)
         self.assertNotIn("masterKeyValue", summary)
         self.assertNotIn("secretKey", summary)
@@ -76,6 +77,8 @@ def fake_manifest():
         "scoreMode": "hamming",
         "deltaMode": "constant",
         "authFeatureStep": 8.0,
+        "authFeatureMode": "sensitive_bands",
+        "authFeatureBandCount": 2,
         "timingSeconds": {
             "delta_calibration": 1.2,
             "fisher.verify_clean_evaluation": 0.4,

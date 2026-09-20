@@ -21,6 +21,7 @@ if str(ROOT) not in sys.path:
 
 from src.blind_v2 import (
     DELTA_FEATURE,
+    AuthFeatureMode,
     BasisMode,
     DeltaMode,
     key_id,
@@ -443,6 +444,8 @@ def estimate_clean_bit_reliability(
     basis_mode: BasisMode,
     delta_mode: DeltaMode,
     auth_feature_step: float,
+    auth_feature_mode: AuthFeatureMode,
+    auth_feature_band_count: int,
 ) -> dict[str, Any]:
     mismatch_counts = np.zeros(8, dtype=np.int64)
     total_count = 0
@@ -455,6 +458,8 @@ def estimate_clean_bit_reliability(
             score_mode="hamming",
             delta_mode=delta_mode,
             auth_feature_step=auth_feature_step,
+            auth_feature_mode=auth_feature_mode,
+            auth_feature_band_count=auth_feature_band_count,
         )
         mismatches = verified.extracted_bits != verified.expected_bits
         mismatch_counts += np.sum(mismatches, axis=(0, 1))
@@ -552,6 +557,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             basis_mode=args.calibration_basis_mode,
             delta_mode=args.delta_mode,
             auth_feature_step=args.auth_feature_step,
+            auth_feature_mode=args.auth_feature_mode,
+            auth_feature_band_count=args.auth_feature_band_count,
         )
 
     baseline_records = []
@@ -565,6 +572,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                     basis_mode=mode,
                     delta_mode=args.delta_mode,
                     auth_feature_step=args.auth_feature_step,
+                    auth_feature_mode=args.auth_feature_mode,
+                    auth_feature_band_count=args.auth_feature_band_count,
                 )
                 for item in calibration_images
             ]
@@ -577,6 +586,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 basis_mode=mode,
                 delta_mode=args.delta_mode,
                 auth_feature_step=args.auth_feature_step,
+                auth_feature_mode=args.auth_feature_mode,
+                auth_feature_band_count=args.auth_feature_band_count,
             )
         score_clean_error_rates = (
             np.asarray(calibration_clean_reliability["errorRates"], dtype=np.float64)
@@ -594,6 +605,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 delta_mode=args.delta_mode,
                 clean_error_rates=score_clean_error_rates,
                 auth_feature_step=args.auth_feature_step,
+                auth_feature_mode=args.auth_feature_mode,
+                auth_feature_band_count=args.auth_feature_band_count,
             )
         with timer.measure(f"{mode}.embed_evaluation"):
             evaluation_embedded = [
@@ -604,6 +617,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                     basis_mode=mode,
                     delta_mode=args.delta_mode,
                     auth_feature_step=args.auth_feature_step,
+                    auth_feature_mode=args.auth_feature_mode,
+                    auth_feature_band_count=args.auth_feature_band_count,
                 )
                 for item in evaluation_images
             ]
@@ -625,6 +640,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                     delta_mode=args.delta_mode,
                     clean_error_rates=score_clean_error_rates,
                     auth_feature_step=args.auth_feature_step,
+                    auth_feature_mode=args.auth_feature_mode,
+                    auth_feature_band_count=args.auth_feature_band_count,
                 )
                 evaluation_clean_score_items.append(verified.scores.ravel())
                 bit_mismatches = verified.extracted_bits != verified.expected_bits
@@ -674,6 +691,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                         delta_mode=args.delta_mode,
                         clean_error_rates=score_clean_error_rates,
                         auth_feature_step=args.auth_feature_step,
+                        auth_feature_mode=args.auth_feature_mode,
+                        auth_feature_band_count=args.auth_feature_band_count,
                     )
                     score_truth_pairs.append((verified.scores, truth))
                     metrics = block_metrics(verified.tamper_blocks, truth)
@@ -772,6 +791,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "scoreMode": args.score_mode,
         "deltaMode": args.delta_mode,
         "authFeatureStep": float(args.auth_feature_step),
+        "authFeatureMode": args.auth_feature_mode,
+        "authFeatureBandCount": int(args.auth_feature_band_count),
         "basisModes": basis_modes,
         "attacks": attacks,
         "deltaEmbedCandidates": candidates,
@@ -845,6 +866,18 @@ def parse_args() -> argparse.Namespace:
             "Quantization step for the canonical features authenticated by HMAC. "
             "Larger values increase clean robustness and may reduce attack sensitivity."
         ),
+    )
+    parser.add_argument(
+        "--auth-feature-mode",
+        choices=("full", "sensitive_bands"),
+        default="full",
+        help="Feature set authenticated by HMAC.",
+    )
+    parser.add_argument(
+        "--auth-feature-band-count",
+        type=int,
+        default=2,
+        help="Number of sensitive reserved radial bands used when auth-feature-mode=sensitive_bands.",
     )
     parser.add_argument("--target-false-positive-rate", type=float, default=0.0)
     parser.add_argument(

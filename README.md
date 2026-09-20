@@ -255,6 +255,18 @@ before HMAC authentication. Larger values are expected to improve clean
 stability, with the empirical attack sensitivity checked by the same private
 pilot summaries and paired comparisons.
 
+The feature set itself can be switched from the full canonical vector to
+Fisher-sensitive radial bands:
+
+```powershell
+python scripts/run_blind_v2_real_pilot.py --manifest-csv results\dataset_manifests\dtd_coco_public_pilot_v1.csv --manifest-derived-root path\to\multicorpus_v1_0 --output results\_scratch\blind_v2_manifest_sensitive_bands.json --calibration-images-per-subcorpus 3 --evaluation-images-per-subcorpus 5 --target-false-positive-rate 0.01 --auth-feature-step 16.0 --auth-feature-mode sensitive_bands --auth-feature-band-count 2
+```
+
+`auth-feature-mode=sensitive_bands` authenticates only the DCT radial bands
+selected by the local Fisher sensitivity model. This is an upstream diagnostic
+for testing whether Fisher-guided feature selection changes the tamper detector
+relative to matched basis baselines.
+
 The embedding allocation can also be switched:
 
 ```powershell

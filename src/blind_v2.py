@@ -12,6 +12,7 @@ import numpy as np
 BasisMode = Literal["fisher", "smallest", "random", "fixed", "identity_cost"]
 ScoreMode = Literal["hamming", "fisher_weighted", "fisher_top4", "fisher_reliability"]
 DeltaMode = Literal["constant", "fisher_sqrt"]
+AuthFeatureMode = Literal["full", "sensitive_bands"]
 
 PROTOCOL_ID = b"CFA-blind-v2"
 BLOCK_SIZE = 16
@@ -334,6 +335,101 @@ def serialize_features(
     return bytes(payload)
 
 
+def serialize_sensitive_band_features(
+    canonical: np.ndarray,
+    energies: np.ndarray,
+    image_shape: tuple[int, int],
+    block_index: tuple[int, int],
+    feature_step: float = DELTA_FEATURE,
+    band_count: int = 2,
+) -> bytes:
+    """Serialize only model bands selected by local Fisher sensitivity."""
+
+    if feature_step <= 0:
+        raise ValueError("feature_step must be positive")
+    selected_radials = sensitive_feature_radials(energies, band_count=band_count)
+    selected = set(selected_radials)
+    height, width = image_shape
+    block_row, block_col = block_index
+    coords = [
+        (row, col)
+        for row, col in model_coordinates(canonical.shape[0])
+        if row + col in selected
+    ]
+    payload = bytearray(PROTOCOL_ID + b"\1")
+    payload.extend(struct.pack(">IIII", height, width, block_row, block_col))
+    payload.extend(struct.pack(">H", len(selected_radials)))
+    for radial in selected_radials:
+        payload.extend(struct.pack(">H", radial))
+    payload.extend(struct.pack(">H", len(coords)))
+    for row, col in coords:
+        payload.extend(struct.pack(">i", _quantize(canonical[row, col], feature_step)))
+
+    radial_energies: dict[int, list[float]] = {}
+    for (row, col), energy in zip(RESERVED_COORDS, energies):
+        if row + col in selected:
+            radial_energies.setdefault(row + col, []).append(float(energy))
+    payload.extend(struct.pack(">H", len(selected_radials)))
+    for radial in selected_radials:
+        payload.extend(
+            struct.pack(">i", _quantize(float(np.mean(radial_energies[radial])), feature_step))
+        )
+    return bytes(payload)
+
+
+def sensitive_feature_radials(energies: np.ndarray, band_count: int = 2) -> tuple[int, ...]:
+    """Return reserved-coefficient radial bands with largest Fisher sensitivity."""
+
+    if band_count <= 0:
+        raise ValueError("band_count must be positive")
+    energy_values = np.asarray(energies, dtype=np.float64)
+    if energy_values.shape != (PAYLOAD_BITS_PER_BLOCK,):
+        raise ValueError("energies must contain one value per payload bit")
+    if np.any(energy_values <= 0.0):
+        raise ValueError("energies must be positive")
+    cost = np.asarray(reserved_frequency_cost_diagonal(), dtype=np.float64)
+    sensitivity = 1.0 / (energy_values * cost)
+    radial_scores: dict[int, list[float]] = {}
+    for (row, col), value in zip(RESERVED_COORDS, sensitivity):
+        radial_scores.setdefault(row + col, []).append(float(value))
+    if band_count > len(radial_scores):
+        raise ValueError("band_count exceeds available reserved radial bands")
+    ranked = sorted(
+        radial_scores,
+        key=lambda radial: (-float(np.mean(radial_scores[radial])), radial),
+    )
+    return tuple(sorted(ranked[:band_count]))
+
+
+def authentication_message(
+    canonical: np.ndarray,
+    energies: np.ndarray,
+    image_shape: tuple[int, int],
+    block_index: tuple[int, int],
+    feature_step: float = DELTA_FEATURE,
+    feature_mode: AuthFeatureMode = "full",
+    feature_band_count: int = 2,
+) -> bytes:
+    if feature_mode == "full":
+        return serialize_features(
+            canonical,
+            energies,
+            image_shape,
+            block_index,
+            feature_step=feature_step,
+        )
+    if feature_mode == "sensitive_bands":
+        return serialize_sensitive_band_features(
+            canonical,
+            energies,
+            image_shape,
+            block_index,
+            feature_step=feature_step,
+            band_count=feature_band_count,
+        )
+    raise ValueError(f"unknown auth feature mode: {feature_mode}")
+
+
 def authentication_bits(
     canonical: np.ndarray,
     energies: np.ndarray,
@@ -341,13 +437,17 @@ def authentication_bits(
     block_index: tuple[int, int],
     auth_key: bytes,
     feature_step: float = DELTA_FEATURE,
+    feature_mode: AuthFeatureMode = "full",
+    feature_band_count: int = 2,
 ) -> np.ndarray:
-    message = serialize_features(
+    message = authentication_message(
         canonical,
         energies,
         image_shape,
         block_index,
         feature_step=feature_step,
+        feature_mode=feature_mode,
+        feature_band_count=feature_band_count,
     )
     digest = hmac.new(auth_key, message, hashlib.sha256).digest()
     return np.array([(digest[0] >> shift) & 1 for shift in range(7, -1, -1)], dtype=np.uint8)
@@ -405,6 +505,8 @@ def embed_block_coefficients(
     basis_mode: BasisMode = "fisher",
     delta_mode: DeltaMode = "constant",
     auth_feature_step: float = DELTA_FEATURE,
+    auth_feature_mode: AuthFeatureMode = "full",
+    auth_feature_band_count: int = 2,
 ) -> tuple[np.ndarray, np.ndarray]:
     """Embed one block's authentication bits into reserved DCT coefficients."""
 
@@ -417,6 +519,8 @@ def embed_block_coefficients(
         basis_mode=basis_mode,
         delta_mode=delta_mode,
         auth_feature_step=auth_feature_step,
+        auth_feature_mode=auth_feature_mode,
+        auth_feature_band_count=auth_feature_band_count,
     )
 
 
@@ -429,6 +533,8 @@ def embed_block_coefficients_with_keys(
     basis_mode: BasisMode = "fisher",
     delta_mode: DeltaMode = "constant",
     auth_feature_step: float = DELTA_FEATURE,
+    auth_feature_mode: AuthFeatureMode = "full",
+    auth_feature_band_count: int = 2,
 ) -> tuple[np.ndarray, np.ndarray]:
     """Embed one block's authentication bits with pre-derived V2 keys."""
 
@@ -440,6 +546,8 @@ def embed_block_coefficients_with_keys(
         block_index,
         keys.auth,
         feature_step=auth_feature_step,
+        feature_mode=auth_feature_mode,
+        feature_band_count=auth_feature_band_count,
     )
     vector = reserved_vector(coefficients)
     delta_scales = delta_allocation_scales(model.values, delta_mode)
@@ -468,6 +576,8 @@ def extract_block_score(
     delta_mode: DeltaMode = "constant",
     clean_error_rates: np.ndarray | None = None,
     auth_feature_step: float = DELTA_FEATURE,
+    auth_feature_mode: AuthFeatureMode = "full",
+    auth_feature_band_count: int = 2,
 ) -> tuple[float, np.ndarray, np.ndarray]:
     """Return Hamming score, extracted bits, and recomputed authentication bits."""
 
@@ -482,6 +592,8 @@ def extract_block_score(
         delta_mode=delta_mode,
         clean_error_rates=clean_error_rates,
         auth_feature_step=auth_feature_step,
+        auth_feature_mode=auth_feature_mode,
+        auth_feature_band_count=auth_feature_band_count,
     )
 
 
@@ -496,6 +608,8 @@ def extract_block_score_with_keys(
     delta_mode: DeltaMode = "constant",
     clean_error_rates: np.ndarray | None = None,
     auth_feature_step: float = DELTA_FEATURE,
+    auth_feature_mode: AuthFeatureMode = "full",
+    auth_feature_band_count: int = 2,
 ) -> tuple[float, np.ndarray, np.ndarray]:
     """Return Hamming score using pre-derived V2 keys."""
 
@@ -507,6 +621,8 @@ def extract_block_score_with_keys(
         block_index,
         keys.auth,
         feature_step=auth_feature_step,
+        feature_mode=auth_feature_mode,
+        feature_band_count=auth_feature_band_count,
     )
     vector = reserved_vector(coefficients)
     extracted = []
