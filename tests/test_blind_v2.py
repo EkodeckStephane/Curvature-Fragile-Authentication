@@ -11,6 +11,7 @@ from src.blind_v2 import (
     authentication_bits,
     block_tamper_map,
     build_block_model,
+    bit_mismatch_score,
     calibrate_threshold,
     canonicalize_coefficients,
     derive_keys,
@@ -115,6 +116,34 @@ class BlindV2Tests(unittest.TestCase):
         self.assertEqual(score, 0.0)
         np.testing.assert_array_equal(extracted, expected)
         np.testing.assert_array_equal(embedded_bits, expected)
+
+    def test_weighted_mismatch_score_uses_model_values(self) -> None:
+        extracted = np.array([1, 0, 0, 0, 0, 0, 0, 0], dtype=np.uint8)
+        expected = np.zeros(8, dtype=np.uint8)
+        weights = np.array([8.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0])
+
+        hamming = bit_mismatch_score(extracted, expected, weights, "hamming")
+        weighted = bit_mismatch_score(
+            extracted, expected, weights, "fisher_weighted"
+        )
+
+        self.assertEqual(hamming, 0.125)
+        self.assertAlmostEqual(weighted, 8.0 / 15.0)
+
+    def test_top4_mismatch_score_uses_only_most_sensitive_bits(self) -> None:
+        expected = np.zeros(8, dtype=np.uint8)
+        weights = np.array([8.0, 7.0, 6.0, 5.0, 1.0, 1.0, 1.0, 1.0])
+        low_mismatch = np.array([0, 0, 0, 0, 1, 0, 0, 0], dtype=np.uint8)
+        high_mismatch = np.array([1, 0, 0, 0, 0, 0, 0, 0], dtype=np.uint8)
+
+        self.assertEqual(
+            bit_mismatch_score(low_mismatch, expected, weights, "fisher_top4"),
+            0.0,
+        )
+        self.assertEqual(
+            bit_mismatch_score(high_mismatch, expected, weights, "fisher_top4"),
+            0.25,
+        )
 
     def test_prederived_key_block_api_matches_public_api(self) -> None:
         public_coeffs, public_bits = embed_block_coefficients(

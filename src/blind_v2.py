@@ -10,6 +10,7 @@ from typing import Literal
 import numpy as np
 
 BasisMode = Literal["fisher", "smallest", "random", "fixed", "identity_cost"]
+ScoreMode = Literal["hamming", "fisher_weighted", "fisher_top4"]
 
 PROTOCOL_ID = b"CFA-blind-v2"
 BLOCK_SIZE = 16
@@ -436,6 +437,7 @@ def extract_block_score(
     master_key: bytes,
     delta_embed: float,
     basis_mode: BasisMode = "fisher",
+    score_mode: ScoreMode = "hamming",
 ) -> tuple[float, np.ndarray, np.ndarray]:
     """Return Hamming score, extracted bits, and recomputed authentication bits."""
 
@@ -446,6 +448,7 @@ def extract_block_score(
         keys=derive_keys(master_key),
         delta_embed=delta_embed,
         basis_mode=basis_mode,
+        score_mode=score_mode,
     )
 
 
@@ -456,6 +459,7 @@ def extract_block_score_with_keys(
     keys: V2Keys,
     delta_embed: float,
     basis_mode: BasisMode = "fisher",
+    score_mode: ScoreMode = "hamming",
 ) -> tuple[float, np.ndarray, np.ndarray]:
     """Return Hamming score using pre-derived V2 keys."""
 
@@ -470,8 +474,37 @@ def extract_block_score_with_keys(
         alpha = float(direction.T @ model.cost @ vector)
         extracted.append(qim_extract_bit(alpha, delta_embed, dither(keys.embed, block_index, index, delta_embed)))
     extracted_array = np.asarray(extracted, dtype=np.uint8)
-    score = float(np.mean(extracted_array != expected))
+    score = bit_mismatch_score(extracted_array, expected, model.values, score_mode)
     return score, extracted_array, expected
+
+
+def bit_mismatch_score(
+    extracted: np.ndarray,
+    expected: np.ndarray,
+    weights: np.ndarray,
+    score_mode: ScoreMode = "hamming",
+) -> float:
+    mismatches = np.asarray(extracted, dtype=np.uint8) != np.asarray(expected, dtype=np.uint8)
+    if score_mode == "hamming":
+        return float(np.mean(mismatches))
+    if score_mode == "fisher_weighted":
+        values = np.asarray(weights, dtype=np.float64)
+        if values.shape != (PAYLOAD_BITS_PER_BLOCK,):
+            raise ValueError("weights must contain one value per payload bit")
+        if np.any(values < 0.0):
+            raise ValueError("weights must be non-negative")
+        total = float(np.sum(values))
+        if total <= 0.0:
+            return float(np.mean(mismatches))
+        return float(np.sum(values * mismatches) / total)
+    if score_mode == "fisher_top4":
+        values = np.asarray(weights, dtype=np.float64)
+        if values.shape != (PAYLOAD_BITS_PER_BLOCK,):
+            raise ValueError("weights must contain one value per payload bit")
+        order = np.argsort(values)[::-1]
+        selected = order[: PAYLOAD_BITS_PER_BLOCK // 2]
+        return float(np.mean(mismatches[selected]))
+    raise ValueError(f"unknown score mode: {score_mode}")
 
 
 def calibrate_threshold(scores: np.ndarray, alpha: float = 0.01) -> tuple[float, float]:

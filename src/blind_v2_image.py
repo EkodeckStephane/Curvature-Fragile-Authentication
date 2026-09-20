@@ -9,6 +9,7 @@ from src.blind_v2 import (
     BLOCK_SIZE,
     PAYLOAD_BPP,
     BasisMode,
+    ScoreMode,
     block_tamper_map,
     calibrate_threshold,
     derive_keys,
@@ -105,6 +106,7 @@ def verify_image(
     delta_embed: float,
     tau: float | None = None,
     basis_mode: BasisMode = "fisher",
+    score_mode: ScoreMode = "hamming",
 ) -> ImageVerifyResult:
     """Verify an image and optionally threshold the block scores."""
 
@@ -124,6 +126,7 @@ def verify_image(
             keys=keys,
             delta_embed=delta_embed,
             basis_mode=basis_mode,
+            score_mode=score_mode,
         )
         scores[block_row, block_col] = score
         extracted[block_row, block_col, :] = block_extracted
@@ -192,12 +195,19 @@ def calibrate_tau_from_clean_images(
     delta_embed: float,
     alpha: float = 0.01,
     basis_mode: BasisMode = "fisher",
+    score_mode: ScoreMode = "hamming",
 ) -> tuple[float, float, np.ndarray]:
     """Calibrate tau from authentic watermarked images."""
 
     scores = []
     for image in watermarked_images:
-        verified = verify_image(image, master_key, delta_embed, basis_mode=basis_mode)
+        verified = verify_image(
+            image,
+            master_key,
+            delta_embed,
+            basis_mode=basis_mode,
+            score_mode=score_mode,
+        )
         scores.append(verified.scores.ravel())
     clean_scores = np.concatenate(scores)
     tau, fpr = calibrate_threshold(clean_scores, alpha=alpha)

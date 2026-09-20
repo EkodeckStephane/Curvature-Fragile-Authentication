@@ -20,6 +20,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from src.blind_v2 import BasisMode, key_id, master_key_from_seed, trim_to_block_grid
+from src.blind_v2 import ScoreMode
 from src.blind_v2_image import (
     SyntheticAttack,
     apply_synthetic_attack,
@@ -526,6 +527,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 delta_embed,
                 alpha=args.target_false_positive_rate,
                 basis_mode=mode,
+                score_mode=args.score_mode,
             )
         with timer.measure(f"{mode}.embed_evaluation"):
             evaluation_embedded = [
@@ -544,6 +546,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                     delta_embed,
                     tau=tau,
                     basis_mode=mode,
+                    score_mode=args.score_mode,
                 )
                 evaluation_clean_score_items.append(verified.scores.ravel())
                 clean_records.append(
@@ -584,6 +587,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                         delta_embed,
                         tau=tau,
                         basis_mode=mode,
+                        score_mode=args.score_mode,
                     )
                     score_truth_pairs.append((verified.scores, truth))
                     metrics = block_metrics(verified.tamper_blocks, truth)
@@ -660,6 +664,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "masterKeyId": key_id(master_key),
         "masterKeyStored": False,
         "calibrationBasisMode": args.calibration_basis_mode,
+        "scoreMode": args.score_mode,
         "basisModes": basis_modes,
         "attacks": attacks,
         "deltaEmbedCandidates": candidates,
@@ -726,6 +731,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--min-psnr-db", type=float, default=40.0)
     parser.add_argument("--max-clean-bit-error-rate", type=float, default=0.01)
     parser.add_argument("--target-false-positive-rate", type=float, default=0.0)
+    parser.add_argument(
+        "--score-mode",
+        choices=("hamming", "fisher_weighted", "fisher_top4"),
+        default="hamming",
+    )
     parser.add_argument(
         "--calibration-basis-mode",
         choices=DEFAULT_BASIS_MODES,
