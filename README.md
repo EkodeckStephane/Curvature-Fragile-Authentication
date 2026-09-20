@@ -187,6 +187,13 @@ engineering manifest. Delta and threshold calibration use the calibration
 split; clean and attack metrics use the evaluation split. The manifest is
 marked `promotionReady: false` until the dataset manifest is complete.
 
+```powershell
+python scripts/summarize_real_pilot.py --input results\_scratch\blind_v2_real_pilot.json --output-dir results\_scratch\blind_v2_real_pilot_summary
+```
+
+The summarizer converts a private scratch manifest into ignored CSV and
+Markdown tables for engineering review.
+
 ## Editorial target
 
 The first target is IEEE Transactions on Information Forensics and Security.
