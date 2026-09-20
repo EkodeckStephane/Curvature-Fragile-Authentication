@@ -176,6 +176,18 @@ python scripts/audit_image_corpus.py --root path\to\image_corpus --output result
 Dataset-derived summaries stay out of public results until source, version,
 license, splits, and citation requirements are checked.
 
+When a derived multicorpus was produced with deterministic source-dependent
+filenames, reconstruct the local identity map with:
+
+```powershell
+python scripts/map_multicorpus_identities.py --derived-root path\to\multicorpus_v1_0 --output-csv results\_scratch\multicorpus_identity_map.csv --bossbase-root path\to\BOSSbase --bows2-root path\to\bows2\cover --dynacis-root path\to\DynaCIS-PIR\data
+```
+
+The command records hashes, dimensions, matched source identifiers, split
+labels, and original paths when the upstream raw or processed roots are
+available. The resulting CSV remains private unless every retained dataset has
+publishable source, version, license, split, and citation metadata.
+
 ### Run a private real-image scratch pilot
 
 ```powershell
