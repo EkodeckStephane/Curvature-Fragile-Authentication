@@ -19,7 +19,14 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from src.blind_v2 import BasisMode, DeltaMode, key_id, master_key_from_seed, trim_to_block_grid
+from src.blind_v2 import (
+    DELTA_FEATURE,
+    BasisMode,
+    DeltaMode,
+    key_id,
+    master_key_from_seed,
+    trim_to_block_grid,
+)
 from src.blind_v2 import ScoreMode
 from src.blind_v2_image import (
     SyntheticAttack,
@@ -435,6 +442,7 @@ def estimate_clean_bit_reliability(
     delta_embed: float,
     basis_mode: BasisMode,
     delta_mode: DeltaMode,
+    auth_feature_step: float,
 ) -> dict[str, Any]:
     mismatch_counts = np.zeros(8, dtype=np.int64)
     total_count = 0
@@ -446,6 +454,7 @@ def estimate_clean_bit_reliability(
             basis_mode=basis_mode,
             score_mode="hamming",
             delta_mode=delta_mode,
+            auth_feature_step=auth_feature_step,
         )
         mismatches = verified.extracted_bits != verified.expected_bits
         mismatch_counts += np.sum(mismatches, axis=(0, 1))
@@ -542,6 +551,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             max_clean_bit_error_rate=args.max_clean_bit_error_rate,
             basis_mode=args.calibration_basis_mode,
             delta_mode=args.delta_mode,
+            auth_feature_step=args.auth_feature_step,
         )
 
     baseline_records = []
@@ -554,6 +564,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                     delta_embed,
                     basis_mode=mode,
                     delta_mode=args.delta_mode,
+                    auth_feature_step=args.auth_feature_step,
                 )
                 for item in calibration_images
             ]
@@ -565,6 +576,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 delta_embed,
                 basis_mode=mode,
                 delta_mode=args.delta_mode,
+                auth_feature_step=args.auth_feature_step,
             )
         score_clean_error_rates = (
             np.asarray(calibration_clean_reliability["errorRates"], dtype=np.float64)
@@ -581,6 +593,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 score_mode=args.score_mode,
                 delta_mode=args.delta_mode,
                 clean_error_rates=score_clean_error_rates,
+                auth_feature_step=args.auth_feature_step,
             )
         with timer.measure(f"{mode}.embed_evaluation"):
             evaluation_embedded = [
@@ -590,6 +603,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                     delta_embed,
                     basis_mode=mode,
                     delta_mode=args.delta_mode,
+                    auth_feature_step=args.auth_feature_step,
                 )
                 for item in evaluation_images
             ]
@@ -610,6 +624,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                     score_mode=args.score_mode,
                     delta_mode=args.delta_mode,
                     clean_error_rates=score_clean_error_rates,
+                    auth_feature_step=args.auth_feature_step,
                 )
                 evaluation_clean_score_items.append(verified.scores.ravel())
                 bit_mismatches = verified.extracted_bits != verified.expected_bits
@@ -658,6 +673,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                         score_mode=args.score_mode,
                         delta_mode=args.delta_mode,
                         clean_error_rates=score_clean_error_rates,
+                        auth_feature_step=args.auth_feature_step,
                     )
                     score_truth_pairs.append((verified.scores, truth))
                     metrics = block_metrics(verified.tamper_blocks, truth)
@@ -755,6 +771,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "calibrationBasisMode": args.calibration_basis_mode,
         "scoreMode": args.score_mode,
         "deltaMode": args.delta_mode,
+        "authFeatureStep": float(args.auth_feature_step),
         "basisModes": basis_modes,
         "attacks": attacks,
         "deltaEmbedCandidates": candidates,
@@ -820,6 +837,15 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--min-psnr-db", type=float, default=40.0)
     parser.add_argument("--max-clean-bit-error-rate", type=float, default=0.01)
+    parser.add_argument(
+        "--auth-feature-step",
+        type=float,
+        default=DELTA_FEATURE,
+        help=(
+            "Quantization step for the canonical features authenticated by HMAC. "
+            "Larger values increase clean robustness and may reduce attack sensitivity."
+        ),
+    )
     parser.add_argument("--target-false-positive-rate", type=float, default=0.0)
     parser.add_argument(
         "--score-mode",

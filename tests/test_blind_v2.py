@@ -6,6 +6,7 @@ import numpy as np
 
 from src.blind_v2 import (
     BLOCK_SIZE,
+    DELTA_FEATURE,
     PAYLOAD_BPP,
     RESERVED_COORDS,
     authentication_bits,
@@ -145,6 +146,28 @@ class BlindV2Tests(unittest.TestCase):
             master_key=self.master,
             delta_embed=8.0,
             delta_mode="fisher_sqrt",
+        )
+
+        self.assertEqual(score, 0.0)
+        np.testing.assert_array_equal(extracted, expected)
+        np.testing.assert_array_equal(embedded_bits, expected)
+
+    def test_auth_feature_step_round_trips_clean_block(self) -> None:
+        embedded, embedded_bits = embed_block_coefficients(
+            self.coefficients,
+            image_shape=(16, 16),
+            block_index=(0, 0),
+            master_key=self.master,
+            delta_embed=8.0,
+            auth_feature_step=DELTA_FEATURE * 2.0,
+        )
+        score, extracted, expected = extract_block_score(
+            embedded,
+            image_shape=(16, 16),
+            block_index=(0, 0),
+            master_key=self.master,
+            delta_embed=8.0,
+            auth_feature_step=DELTA_FEATURE * 2.0,
         )
 
         self.assertEqual(score, 0.0)

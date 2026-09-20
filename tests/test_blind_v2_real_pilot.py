@@ -118,6 +118,7 @@ class BlindV2RealPilotTests(unittest.TestCase):
                 delta_embed_candidates=[2.0, 4.0],
                 min_psnr_db=30.0,
                 max_clean_bit_error_rate=0.01,
+                auth_feature_step=8.0,
                 target_false_positive_rate=0.0,
                 score_mode="fisher_reliability",
                 delta_mode="constant",
@@ -139,6 +140,7 @@ class BlindV2RealPilotTests(unittest.TestCase):
         self.assertEqual(written["calibrationImageCount"], 1)
         self.assertEqual(written["evaluationImageCount"], 1)
         self.assertEqual(written["imageCount"], 1)
+        self.assertEqual(written["authFeatureStep"], 8.0)
         self.assertIn("sha256", written["baselines"][0]["clean"][0])
         self.assertEqual(
             len(written["baselines"][0]["calibrationCleanThresholdCurve"]), 9

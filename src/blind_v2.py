@@ -340,8 +340,15 @@ def authentication_bits(
     image_shape: tuple[int, int],
     block_index: tuple[int, int],
     auth_key: bytes,
+    feature_step: float = DELTA_FEATURE,
 ) -> np.ndarray:
-    message = serialize_features(canonical, energies, image_shape, block_index)
+    message = serialize_features(
+        canonical,
+        energies,
+        image_shape,
+        block_index,
+        feature_step=feature_step,
+    )
     digest = hmac.new(auth_key, message, hashlib.sha256).digest()
     return np.array([(digest[0] >> shift) & 1 for shift in range(7, -1, -1)], dtype=np.uint8)
 
@@ -397,6 +404,7 @@ def embed_block_coefficients(
     delta_embed: float,
     basis_mode: BasisMode = "fisher",
     delta_mode: DeltaMode = "constant",
+    auth_feature_step: float = DELTA_FEATURE,
 ) -> tuple[np.ndarray, np.ndarray]:
     """Embed one block's authentication bits into reserved DCT coefficients."""
 
@@ -408,6 +416,7 @@ def embed_block_coefficients(
         delta_embed=delta_embed,
         basis_mode=basis_mode,
         delta_mode=delta_mode,
+        auth_feature_step=auth_feature_step,
     )
 
 
@@ -419,12 +428,18 @@ def embed_block_coefficients_with_keys(
     delta_embed: float,
     basis_mode: BasisMode = "fisher",
     delta_mode: DeltaMode = "constant",
+    auth_feature_step: float = DELTA_FEATURE,
 ) -> tuple[np.ndarray, np.ndarray]:
     """Embed one block's authentication bits with pre-derived V2 keys."""
 
     model = build_block_model(coefficients, basis_mode, keys, block_index)
     bits = authentication_bits(
-        model.canonical, model.energies, image_shape, block_index, keys.auth
+        model.canonical,
+        model.energies,
+        image_shape,
+        block_index,
+        keys.auth,
+        feature_step=auth_feature_step,
     )
     vector = reserved_vector(coefficients)
     delta_scales = delta_allocation_scales(model.values, delta_mode)
@@ -452,6 +467,7 @@ def extract_block_score(
     score_mode: ScoreMode = "hamming",
     delta_mode: DeltaMode = "constant",
     clean_error_rates: np.ndarray | None = None,
+    auth_feature_step: float = DELTA_FEATURE,
 ) -> tuple[float, np.ndarray, np.ndarray]:
     """Return Hamming score, extracted bits, and recomputed authentication bits."""
 
@@ -465,6 +481,7 @@ def extract_block_score(
         score_mode=score_mode,
         delta_mode=delta_mode,
         clean_error_rates=clean_error_rates,
+        auth_feature_step=auth_feature_step,
     )
 
 
@@ -478,12 +495,18 @@ def extract_block_score_with_keys(
     score_mode: ScoreMode = "hamming",
     delta_mode: DeltaMode = "constant",
     clean_error_rates: np.ndarray | None = None,
+    auth_feature_step: float = DELTA_FEATURE,
 ) -> tuple[float, np.ndarray, np.ndarray]:
     """Return Hamming score using pre-derived V2 keys."""
 
     model = build_block_model(coefficients, basis_mode, keys, block_index)
     expected = authentication_bits(
-        model.canonical, model.energies, image_shape, block_index, keys.auth
+        model.canonical,
+        model.energies,
+        image_shape,
+        block_index,
+        keys.auth,
+        feature_step=auth_feature_step,
     )
     vector = reserved_vector(coefficients)
     extracted = []
