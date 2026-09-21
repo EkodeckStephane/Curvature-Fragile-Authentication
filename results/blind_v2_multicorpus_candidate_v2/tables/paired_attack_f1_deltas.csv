@@ -1,0 +1,17 @@
+baseline,attack,deltaFisherMinusBaseline,ci95Low,ci95High,pairedSignFlipP,favorablePairs,unfavorablePairs,ties
+fixed,center_mean,0.01879,0.003889,0.035556,0.023438,7,1,32
+fixed,constant_average_block,0.024107,0.005357,0.045536,0.023438,7,1,32
+fixed,copy_move,0.018889,0.003889,0.035,0.023438,7,1,32
+fixed,inter_block_substitution,0.033333,0.008333,0.06,0.023438,7,1,32
+identity_cost,center_mean,0.011567,0.000456,0.024802,0.0625,5,1,34
+identity_cost,constant_average_block,0.015179,0.0,0.032143,0.0625,5,1,34
+identity_cost,copy_move,0.011667,0.0,0.025,0.0625,5,1,34
+identity_cost,inter_block_substitution,0.021667,0.001667,0.045,0.0625,5,1,34
+random,center_mean,0.017929,0.006818,0.031263,0.015625,7,0,33
+random,constant_average_block,0.022619,0.007738,0.039881,0.015625,7,0,33
+random,copy_move,0.017929,0.007222,0.030859,0.015625,7,0,33
+random,inter_block_substitution,0.022381,-0.005952,0.05,0.15625,7,1,32
+smallest,center_mean,0.010052,-0.006515,0.026421,0.34375,7,3,30
+smallest,constant_average_block,0.012798,-0.007143,0.034226,0.34375,7,3,30
+smallest,copy_move,0.010152,-0.005657,0.026818,0.34375,7,3,30
+smallest,inter_block_substitution,0.017381,-0.010238,0.045,0.34375,7,3,30

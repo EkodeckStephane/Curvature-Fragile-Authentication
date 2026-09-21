@@ -284,16 +284,40 @@ Both fix `auth-feature-step=24.0`, `auth-feature-mode=sensitive_bands` and
 `auth-feature-band-count=3`. Candidate v2 additionally fixes
 `delta-embed-candidates=8.0` for the next license-clean validation stage.
 
-The promoted aggregate result for candidate v2 is stored in:
+The promoted restricted DTD+COCO aggregate result for candidate v2 is stored in:
 
 ```text
 results/blind_v2_sensitive_bands_candidate_v2/summary.json
 results/blind_v2_sensitive_bands_candidate_v2/README.md
 ```
 
-It reports only aggregate metrics over the restricted DTD+COCO pilot manifest;
-pixels, local paths, image derivatives and secret key material stay outside
-version control.
+It reports aggregate metrics over the restricted DTD+COCO manifest; pixels,
+local paths, image derivatives and secret key material stay outside version
+control.
+
+The promoted five-subcorpus multicorpus aggregate used by the current TIFS
+manuscript is stored in:
+
+```text
+results/blind_v2_multicorpus_candidate_v2/summary.json
+results/blind_v2_multicorpus_candidate_v2/tables/
+results/blind_v2_multicorpus_candidate_v2/README.md
+```
+
+It covers BOSSBase 1.01, BOWS-2, DTD textures, INRIA Holidays and MS-COCO
+val2017 with 40 calibration and 40 evaluation images, four deterministic
+attacks and four matched baselines. It is a sanitized aggregate: no pixels,
+watermarked images, attacked images, per-image filenames, local paths or secret
+key material are published.
+
+To regenerate the sanitized multicorpus aggregate from a private scratch run:
+
+```powershell
+python scripts/promote_multicorpus_aggregate.py --scratch results\_scratch\blind_v2_multicorpus_candidate_step24_delta8_fivemode_v1.json --paired-csv results\_scratch\blind_v2_multicorpus_candidate_step24_delta8_fivemode_v1_paired\paired_comparisons.csv --output-dir results\blind_v2_multicorpus_candidate_v2 --protocol-id blind-v2-sensitive-bands-step24-delta8-alpha001-multicorpus-v2
+```
+
+The manuscript supplement also includes rights-safe TikZ qualitative examples
+that reproduce block-map readings without using dataset pixels.
 
 The embedding allocation can also be switched:
 

@@ -1,0 +1,6 @@
+basisMode,center_mean,copy_move,constant_average_block,inter_block_substitution
+fisher,0.963651,0.967222,0.958036,0.933333
+smallest,0.953598,0.957071,0.945238,0.915952
+random,0.945722,0.949293,0.935417,0.910952
+fixed,0.944861,0.948333,0.933929,0.9
+identity_cost,0.952083,0.955556,0.942857,0.911667
