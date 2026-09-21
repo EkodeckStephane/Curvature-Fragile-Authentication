@@ -75,6 +75,34 @@ class CandidateProtocolTests(unittest.TestCase):
                 self.assertNotIn("masterKeyValue", text)
                 self.assertNotIn("secretKey", text)
 
+    def test_candidate_v2_promoted_result_is_aggregate_and_sanitized(self) -> None:
+        path = ROOT / "results" / "blind_v2_sensitive_bands_candidate_v2" / "summary.json"
+        result = json.loads(path.read_text(encoding="utf-8"))
+        serialized = json.dumps(result)
+
+        self.assertEqual(result["schema"], "blind-v2-promoted-aggregate-result/v1")
+        self.assertEqual(
+            result["protocolId"],
+            "blind-v2-sensitive-bands-step24-delta8-alpha001-v2",
+        )
+        self.assertEqual(result["status"], "promoted-aggregate-result")
+        self.assertFalse(result["safety"]["pixelsStored"])
+        self.assertFalse(result["safety"]["localPathsStored"])
+        self.assertFalse(result["safety"]["masterKeyStored"])
+        self.assertEqual(result["candidate"]["selectedDeltaEmbed"], 8.0)
+        self.assertGreater(
+            result["attackMeanBlockF1"]["fisher"]["center_mean"],
+            result["attackMeanBlockF1"]["fixed"]["center_mean"],
+        )
+        self.assertGreater(
+            result["attackMeanBlockF1"]["fisher"]["inter_block_substitution"],
+            result["attackMeanBlockF1"]["random"]["inter_block_substitution"],
+        )
+        self.assertNotIn("C:\\Users", serialized)
+        self.assertNotIn("Documents\\Articles", serialized)
+        self.assertNotIn("masterKeyValue", serialized)
+        self.assertNotIn("secretKey", serialized)
+
 
 if __name__ == "__main__":
     unittest.main()

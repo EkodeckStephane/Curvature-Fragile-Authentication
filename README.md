@@ -284,6 +284,17 @@ Both fix `auth-feature-step=24.0`, `auth-feature-mode=sensitive_bands` and
 `auth-feature-band-count=3`. Candidate v2 additionally fixes
 `delta-embed-candidates=8.0` for the next license-clean validation stage.
 
+The promoted aggregate result for candidate v2 is stored in:
+
+```text
+results/blind_v2_sensitive_bands_candidate_v2/summary.json
+results/blind_v2_sensitive_bands_candidate_v2/README.md
+```
+
+It reports only aggregate metrics over the restricted DTD+COCO pilot manifest;
+pixels, local paths, image derivatives and secret key material stay outside
+version control.
+
 The embedding allocation can also be switched:
 
 ```powershell
