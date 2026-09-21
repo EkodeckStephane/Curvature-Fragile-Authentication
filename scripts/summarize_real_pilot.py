@@ -133,6 +133,7 @@ def markdown_summary(
         f"- Target FPR alpha: {manifest.get('targetFalsePositiveRate')}",
         f"- Score mode: `{manifest.get('scoreMode')}`",
         f"- Delta mode: `{manifest.get('deltaMode')}`",
+        f"- Threshold scope: `{manifest.get('thresholdScope')}`",
         f"- Auth feature step: {manifest.get('authFeatureStep')}",
         f"- Auth feature mode: `{manifest.get('authFeatureMode')}`",
         f"- Auth feature band count: {manifest.get('authFeatureBandCount')}",

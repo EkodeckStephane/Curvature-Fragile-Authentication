@@ -122,6 +122,7 @@ class BlindV2RealPilotTests(unittest.TestCase):
                 auth_feature_mode="sensitive_bands",
                 auth_feature_band_count=2,
                 target_false_positive_rate=0.0,
+                threshold_scope="subcorpus",
                 score_mode="fisher_reliability",
                 delta_mode="constant",
                 calibration_basis_mode="fisher",
@@ -145,6 +146,9 @@ class BlindV2RealPilotTests(unittest.TestCase):
         self.assertEqual(written["authFeatureStep"], 8.0)
         self.assertEqual(written["authFeatureMode"], "sensitive_bands")
         self.assertEqual(written["authFeatureBandCount"], 2)
+        self.assertEqual(written["thresholdScope"], "subcorpus")
+        self.assertEqual(written["baselines"][0]["thresholdScope"], "subcorpus")
+        self.assertIn("sample", written["baselines"][0]["tauBySubcorpus"])
         self.assertIn("sha256", written["baselines"][0]["clean"][0])
         self.assertEqual(
             len(written["baselines"][0]["calibrationCleanThresholdCurve"]), 9

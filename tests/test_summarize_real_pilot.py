@@ -57,6 +57,7 @@ class SummarizeRealPilotTests(unittest.TestCase):
         self.assertIn("Promotion ready: `False`", summary)
         self.assertIn("Auth feature step: 8.0", summary)
         self.assertIn("Auth feature mode: `sensitive_bands`", summary)
+        self.assertIn("Threshold scope: `subcorpus`", summary)
         self.assertIn("Clean bit reliability", summary)
         self.assertNotIn("masterKeyValue", summary)
         self.assertNotIn("secretKey", summary)
@@ -76,6 +77,7 @@ def fake_manifest():
         "targetFalsePositiveRate": 0.01,
         "scoreMode": "hamming",
         "deltaMode": "constant",
+        "thresholdScope": "subcorpus",
         "authFeatureStep": 8.0,
         "authFeatureMode": "sensitive_bands",
         "authFeatureBandCount": 2,

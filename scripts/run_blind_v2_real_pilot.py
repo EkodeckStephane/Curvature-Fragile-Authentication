@@ -24,6 +24,7 @@ from src.blind_v2 import (
     AuthFeatureMode,
     BasisMode,
     DeltaMode,
+    calibrate_threshold,
     key_id,
     master_key_from_seed,
     trim_to_block_grid,
@@ -474,6 +475,48 @@ def estimate_clean_bit_reliability(
     }
 
 
+def calibrate_tau_by_subcorpus(
+    calibration_images: list[CorpusImage],
+    calibration_watermarked_images: list[np.ndarray],
+    master_key: bytes,
+    delta_embed: float,
+    alpha: float,
+    basis_mode: BasisMode,
+    score_mode: ScoreMode,
+    delta_mode: DeltaMode,
+    clean_error_rates: np.ndarray | None,
+    auth_feature_step: float,
+    auth_feature_mode: AuthFeatureMode,
+    auth_feature_band_count: int,
+) -> tuple[dict[str, float], dict[str, float], np.ndarray]:
+    score_groups: dict[str, list[np.ndarray]] = {}
+    for item, image in zip(calibration_images, calibration_watermarked_images):
+        verified = verify_image(
+            image,
+            master_key,
+            delta_embed,
+            basis_mode=basis_mode,
+            score_mode=score_mode,
+            delta_mode=delta_mode,
+            clean_error_rates=clean_error_rates,
+            auth_feature_step=auth_feature_step,
+            auth_feature_mode=auth_feature_mode,
+            auth_feature_band_count=auth_feature_band_count,
+        )
+        score_groups.setdefault(item.subcorpus, []).append(verified.scores.ravel())
+
+    tau_by_subcorpus: dict[str, float] = {}
+    fpr_by_subcorpus: dict[str, float] = {}
+    all_scores = []
+    for subcorpus in sorted(score_groups):
+        scores = np.concatenate(score_groups[subcorpus])
+        tau, fpr = calibrate_threshold(scores, alpha=alpha)
+        tau_by_subcorpus[subcorpus] = float(tau)
+        fpr_by_subcorpus[subcorpus] = float(fpr)
+        all_scores.append(scores)
+    return tau_by_subcorpus, fpr_by_subcorpus, np.concatenate(all_scores)
+
+
 def summarize_subcorpora(images: list[CorpusImage]) -> dict[str, dict[str, Any]]:
     subcorpora: dict[str, dict[str, Any]] = {}
     for item in images:
@@ -595,19 +638,41 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             else None
         )
         with timer.measure(f"{mode}.tau_calibration"):
-            tau, validation_fpr, clean_scores = calibrate_tau_from_clean_images(
-                calibration_watermarked_images,
-                master_key,
-                delta_embed,
-                alpha=args.target_false_positive_rate,
-                basis_mode=mode,
-                score_mode=args.score_mode,
-                delta_mode=args.delta_mode,
-                clean_error_rates=score_clean_error_rates,
-                auth_feature_step=args.auth_feature_step,
-                auth_feature_mode=args.auth_feature_mode,
-                auth_feature_band_count=args.auth_feature_band_count,
-            )
+            if args.threshold_scope == "subcorpus":
+                tau_by_subcorpus, fpr_by_subcorpus, clean_scores = (
+                    calibrate_tau_by_subcorpus(
+                        calibration_images,
+                        calibration_watermarked_images,
+                        master_key,
+                        delta_embed,
+                        alpha=args.target_false_positive_rate,
+                        basis_mode=mode,
+                        score_mode=args.score_mode,
+                        delta_mode=args.delta_mode,
+                        clean_error_rates=score_clean_error_rates,
+                        auth_feature_step=args.auth_feature_step,
+                        auth_feature_mode=args.auth_feature_mode,
+                        auth_feature_band_count=args.auth_feature_band_count,
+                    )
+                )
+                tau = float(np.mean(list(tau_by_subcorpus.values())))
+                validation_fpr = float(np.mean(list(fpr_by_subcorpus.values())))
+            else:
+                tau, validation_fpr, clean_scores = calibrate_tau_from_clean_images(
+                    calibration_watermarked_images,
+                    master_key,
+                    delta_embed,
+                    alpha=args.target_false_positive_rate,
+                    basis_mode=mode,
+                    score_mode=args.score_mode,
+                    delta_mode=args.delta_mode,
+                    clean_error_rates=score_clean_error_rates,
+                    auth_feature_step=args.auth_feature_step,
+                    auth_feature_mode=args.auth_feature_mode,
+                    auth_feature_band_count=args.auth_feature_band_count,
+                )
+                tau_by_subcorpus = {}
+                fpr_by_subcorpus = {}
         with timer.measure(f"{mode}.embed_evaluation"):
             evaluation_embedded = [
                 embed_image(
@@ -630,11 +695,16 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         with timer.measure(f"{mode}.verify_clean_evaluation"):
             for index, embedded_item in enumerate(evaluation_embedded):
                 source_item = evaluation_images[index]
+                item_tau = (
+                    tau_by_subcorpus.get(source_item.subcorpus, tau)
+                    if args.threshold_scope == "subcorpus"
+                    else tau
+                )
                 verified = verify_image(
                     embedded_item.watermarked,
                     master_key,
                     delta_embed,
-                    tau=tau,
+                    tau=item_tau,
                     basis_mode=mode,
                     score_mode=args.score_mode,
                     delta_mode=args.delta_mode,
@@ -666,6 +736,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                         "flaggedBlockCount": int(np.sum(verified.tamper_blocks)),
                         "blockCount": int(verified.scores.size),
                         "maxBlockScore": float(np.max(verified.scores)),
+                        "tau": float(item_tau),
                     }
                 )
 
@@ -675,6 +746,12 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             score_truth_pairs = []
             with timer.measure(f"{mode}.attack.{attack}"):
                 for index, embedded_item in enumerate(evaluation_embedded):
+                    source_item = evaluation_images[index]
+                    item_tau = (
+                        tau_by_subcorpus.get(source_item.subcorpus, tau)
+                        if args.threshold_scope == "subcorpus"
+                        else tau
+                    )
                     source = evaluation_embedded[(index + 1) % len(evaluation_embedded)].watermarked
                     attacked, truth = apply_synthetic_attack(
                         embedded_item.watermarked,
@@ -685,7 +762,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                         attacked,
                         master_key,
                         delta_embed,
-                        tau=tau,
+                        tau=item_tau,
                         basis_mode=mode,
                         score_mode=args.score_mode,
                         delta_mode=args.delta_mode,
@@ -697,12 +774,13 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                     score_truth_pairs.append((verified.scores, truth))
                     metrics = block_metrics(verified.tamper_blocks, truth)
                     metrics["imageIndex"] = index
-                    metrics["subcorpus"] = evaluation_images[index].subcorpus
-                    metrics["relativePath"] = evaluation_images[index].relative_path
-                    metrics["recordId"] = evaluation_images[index].record_id
-                    metrics["dataset"] = evaluation_images[index].dataset
-                    metrics["sourceImageId"] = evaluation_images[index].source_image_id
-                    metrics["sourceFileName"] = evaluation_images[index].source_file_name
+                    metrics["subcorpus"] = source_item.subcorpus
+                    metrics["relativePath"] = source_item.relative_path
+                    metrics["recordId"] = source_item.record_id
+                    metrics["dataset"] = source_item.dataset
+                    metrics["sourceImageId"] = source_item.source_image_id
+                    metrics["sourceFileName"] = source_item.source_file_name
+                    metrics["tau"] = float(item_tau)
                     metrics["truthBlockCount"] = int(np.sum(truth))
                     metrics["predictedBlockCount"] = int(np.sum(verified.tamper_blocks))
                     metric_items.append(metrics)
@@ -723,6 +801,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 "basisMode": mode,
                 "tau": float(tau),
                 "validationFalsePositiveRate": float(validation_fpr),
+                "thresholdScope": args.threshold_scope,
+                "tauBySubcorpus": tau_by_subcorpus,
+                "validationFalsePositiveRateBySubcorpus": fpr_by_subcorpus,
                 "cleanScoreHistogram": {
                     f"{k}/8": int(np.sum(clean_scores == k / 8.0)) for k in range(9)
                 },
@@ -790,6 +871,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "calibrationBasisMode": args.calibration_basis_mode,
         "scoreMode": args.score_mode,
         "deltaMode": args.delta_mode,
+        "thresholdScope": args.threshold_scope,
         "authFeatureStep": float(args.auth_feature_step),
         "authFeatureMode": args.auth_feature_mode,
         "authFeatureBandCount": int(args.auth_feature_band_count),
@@ -880,6 +962,12 @@ def parse_args() -> argparse.Namespace:
         help="Number of sensitive reserved radial bands used when auth-feature-mode=sensitive_bands.",
     )
     parser.add_argument("--target-false-positive-rate", type=float, default=0.0)
+    parser.add_argument(
+        "--threshold-scope",
+        choices=("global", "subcorpus"),
+        default="global",
+        help="Calibrate one global tau or one tau per subcorpus.",
+    )
     parser.add_argument(
         "--score-mode",
         choices=("hamming", "fisher_weighted", "fisher_top4", "fisher_reliability"),

@@ -229,6 +229,10 @@ When `--manifest-derived-root` is provided, the runner verifies the manifest
 SHA-256 hashes for the local derived files. Alternatively, official dataset
 roots can be supplied with `--dtd-root` and `--coco-root`.
 
+Threshold calibration is global by default. For private stratified diagnostics,
+`--threshold-scope subcorpus` calibrates one decision threshold per subcorpus
+while keeping the same calibration/evaluation split discipline.
+
 The detector score can be switched for private design diagnostics:
 
 ```powershell
