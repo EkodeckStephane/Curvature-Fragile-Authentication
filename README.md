@@ -304,6 +304,16 @@ counts, totals and clean error rates. This supports detector-aware reliability
 diagnostics while keeping pixels, local paths and secret material out of the
 public repository.
 
+For finer clean-stability diagnostics by subcorpus and reserved DCT bit:
+
+```powershell
+python scripts/analyze_clean_bit_stability.py --root path\to\image_corpus --output-json results\_scratch\clean_bit_stability.json --output-csv results\_scratch\clean_bit_stability.csv --calibration-images-per-subcorpus 1 --evaluation-images-per-subcorpus 1
+```
+
+The diagnostic writes private ignored JSON/CSV artifacts with
+`basis × split × subcorpus × bit` clean mismatch rates. It stores no pixels,
+local image paths, or secret key material.
+
 For paired Fisher-vs-baseline diagnostics on the same evaluated images, run:
 
 ```powershell
