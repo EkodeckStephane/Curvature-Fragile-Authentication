@@ -80,6 +80,10 @@ class BlindV2ImageTests(unittest.TestCase):
             "copy_move",
             "constant_average_block",
             "inter_block_substitution",
+            "non_aligned_patch",
+            "channel_jpeg_q90",
+            "channel_blur_sigma0_6",
+            "channel_resize_roundtrip",
         ):
             attacked, mask = apply_synthetic_attack(
                 self.gate.synthetic_images(123, 1, 64, 64)[0],
@@ -89,6 +93,16 @@ class BlindV2ImageTests(unittest.TestCase):
             self.assertEqual(attacked.shape, (64, 64))
             self.assertEqual(mask.shape, (4, 4))
             self.assertGreater(int(np.sum(mask)), 0)
+
+    def test_high_integrity_channel_events_mark_full_image_truth(self) -> None:
+        image = self.gate.synthetic_images(123, 1, 64, 64)[0]
+        for attack in (
+            "channel_jpeg_q90",
+            "channel_blur_sigma0_6",
+            "channel_resize_roundtrip",
+        ):
+            _, mask = apply_synthetic_attack(image, attack)
+            self.assertTrue(bool(np.all(mask)))
 
     def test_block_metrics_counts_binary_maps(self) -> None:
         metrics = block_metrics(

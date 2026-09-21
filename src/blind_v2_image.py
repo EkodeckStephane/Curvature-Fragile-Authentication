@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from io import BytesIO
 from typing import Iterable, Literal
 
 import numpy as np
+from PIL import Image, ImageFilter
 
 from src.blind_v2 import (
     BLOCK_SIZE,
@@ -49,6 +51,10 @@ SyntheticAttack = Literal[
     "copy_move",
     "constant_average_block",
     "inter_block_substitution",
+    "non_aligned_patch",
+    "channel_jpeg_q90",
+    "channel_blur_sigma0_6",
+    "channel_resize_roundtrip",
 ]
 
 
@@ -321,6 +327,25 @@ def apply_synthetic_attack(
         for block_row, block_col in targets:
             _set_block(attacked, block_row, block_col, donor_block, block_size)
             mask[block_row, block_col] = True
+    elif attack == "non_aligned_patch":
+        patch_h = max(block_size + block_size // 2, value.shape[0] // 7)
+        patch_w = max(block_size + block_size // 2, value.shape[1] // 7)
+        row0 = min(value.shape[0] - patch_h, value.shape[0] // 2 - block_size // 3)
+        col0 = min(value.shape[1] - patch_w, value.shape[1] // 2 - block_size // 5)
+        row0 = max(0, row0)
+        col0 = max(0, col0)
+        patch = attacked[row0 : row0 + patch_h, col0 : col0 + patch_w]
+        attacked[row0 : row0 + patch_h, col0 : col0 + patch_w] = float(np.mean(patch))
+        _mark_intersecting_blocks(mask, row0, col0, patch_h, patch_w, block_size)
+    elif attack == "channel_jpeg_q90":
+        attacked = _jpeg_roundtrip(value, quality=90)
+        mask[:, :] = True
+    elif attack == "channel_blur_sigma0_6":
+        attacked = _pil_filter(value, ImageFilter.GaussianBlur(radius=0.6))
+        mask[:, :] = True
+    elif attack == "channel_resize_roundtrip":
+        attacked = _resize_roundtrip(value, scale=0.875)
+        mask[:, :] = True
     else:
         raise ValueError(f"unknown synthetic attack: {attack}")
 
@@ -383,3 +408,48 @@ def _set_block(
     row = block_row * block_size
     col = block_col * block_size
     image[row : row + block_size, col : col + block_size] = block
+
+
+def _uint8_image(image: np.ndarray) -> Image.Image:
+    clipped = np.clip(np.rint(image), 0, 255).astype(np.uint8)
+    return Image.fromarray(clipped, mode="L")
+
+
+def _jpeg_roundtrip(image: np.ndarray, quality: int) -> np.ndarray:
+    buffer = BytesIO()
+    _uint8_image(image).save(buffer, format="JPEG", quality=quality)
+    buffer.seek(0)
+    with Image.open(buffer) as restored:
+        return np.asarray(restored.convert("L"), dtype=np.float64)
+
+
+def _pil_filter(image: np.ndarray, image_filter: ImageFilter.Filter) -> np.ndarray:
+    return np.asarray(_uint8_image(image).filter(image_filter), dtype=np.float64)
+
+
+def _resize_roundtrip(image: np.ndarray, scale: float) -> np.ndarray:
+    pil = _uint8_image(image)
+    width, height = pil.size
+    down = pil.resize(
+        (max(1, int(round(width * scale))), max(1, int(round(height * scale)))),
+        resample=Image.Resampling.BICUBIC,
+    )
+    restored = down.resize((width, height), resample=Image.Resampling.BICUBIC)
+    return np.asarray(restored, dtype=np.float64)
+
+
+def _mark_intersecting_blocks(
+    mask: np.ndarray,
+    row0: int,
+    col0: int,
+    height: int,
+    width: int,
+    block_size: int,
+) -> None:
+    row1 = row0 + height - 1
+    col1 = col0 + width - 1
+    block_row0 = row0 // block_size
+    block_col0 = col0 // block_size
+    block_row1 = min(mask.shape[0] - 1, row1 // block_size)
+    block_col1 = min(mask.shape[1] - 1, col1 // block_size)
+    mask[block_row0 : block_row1 + 1, block_col0 : block_col1 + 1] = True

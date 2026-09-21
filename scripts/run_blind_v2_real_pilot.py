@@ -47,6 +47,10 @@ DEFAULT_ATTACKS: tuple[SyntheticAttack, ...] = (
     "copy_move",
     "constant_average_block",
     "inter_block_substitution",
+    "non_aligned_patch",
+    "channel_jpeg_q90",
+    "channel_blur_sigma0_6",
+    "channel_resize_roundtrip",
 )
 DEFAULT_BASIS_MODES: tuple[BasisMode, ...] = (
     "fisher",

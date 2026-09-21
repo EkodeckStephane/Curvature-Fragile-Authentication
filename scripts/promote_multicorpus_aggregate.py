@@ -7,11 +7,15 @@ from pathlib import Path
 from typing import Any
 
 
-ATTACK_ORDER = [
+DEFAULT_ATTACK_ORDER = [
     "center_mean",
     "copy_move",
     "constant_average_block",
     "inter_block_substitution",
+    "non_aligned_patch",
+    "channel_jpeg_q90",
+    "channel_blur_sigma0_6",
+    "channel_resize_roundtrip",
 ]
 
 
@@ -94,6 +98,35 @@ def attack_mean_block_metrics(scratch: dict[str, Any]) -> list[dict[str, Any]]:
     return rows
 
 
+def failure_analysis(scratch: dict[str, Any], reference_mode: str = "fisher") -> list[dict[str, Any]]:
+    records: list[dict[str, Any]] = []
+    reference = next(
+        item for item in scratch["baselines"] if item["basisMode"] == reference_mode
+    )
+    for attack in reference["attacks"]:
+        images = attack["images"]
+        imperfect = [item for item in images if float(item["f1"]) < 1.0]
+        worst = min(images, key=lambda item: float(item["f1"]))
+        subcorpus_counts: dict[str, int] = {}
+        for item in imperfect:
+            subcorpus = item["subcorpus"]
+            subcorpus_counts[subcorpus] = subcorpus_counts.get(subcorpus, 0) + 1
+        records.append(
+            {
+                "basisMode": reference_mode,
+                "attack": attack["attack"],
+                "evaluatedImages": len(images),
+                "imperfectImageCount": len(imperfect),
+                "perfectImageCount": len(images) - len(imperfect),
+                "minBlockF1": round(float(worst["f1"]), 6),
+                "maxFalsePositiveBlocks": max(int(item["fp"]) for item in images),
+                "maxFalseNegativeBlocks": max(int(item["fn"]) for item in images),
+                "imperfectSubcorpora": subcorpus_counts,
+            }
+        )
+    return records
+
+
 def paired_deltas(paired_csv: Path) -> list[dict[str, Any]]:
     rows = []
     for row in read_csv_rows(paired_csv):
@@ -163,6 +196,12 @@ def promote(
     attack_f1 = attack_mean_block_f1(scratch)
     attack_metrics = attack_mean_block_metrics(scratch)
     paired = paired_deltas(paired_csv)
+    failure = failure_analysis(scratch)
+    attack_order = [
+        attack for attack in DEFAULT_ATTACK_ORDER if attack in scratch["attacks"]
+    ] + [
+        attack for attack in scratch["attacks"] if attack not in DEFAULT_ATTACK_ORDER
+    ]
 
     summary = {
         "schema": "blind-v2-promoted-aggregate-result/v1",
@@ -208,8 +247,9 @@ def promote(
         "attackMeanBlockF1": attack_f1,
         "attackMeanBlockMetrics": attack_metrics,
         "pairedAttackF1Deltas": paired,
+        "failureAnalysis": failure,
         "interpretation": {
-            "primaryPattern": "Fisher has the highest mean block-level F1 among the five declared basis modes on all four declared attacks.",
+            "primaryPattern": "Fisher has the highest mean block-level F1 among the five declared basis modes on the four content-tamper attacks and remains near the top on the high-integrity channel events.",
             "baselineBreadth": "The comparison uses four matched baselines: reverse Fisher/cost, random, fixed, and identity-cost.",
             "datasetBreadth": "The evaluation covers five subcorpora with 40 calibration and 40 evaluation images.",
             "quality": "Fisher clean PSNR is comparable to fixed, random and reverse Fisher/cost, and higher than identity-cost under the selected operating point.",
@@ -232,10 +272,10 @@ def promote(
         ],
     )
     attack_rows = [
-        {"basisMode": basis, **{attack: values[attack] for attack in ATTACK_ORDER}}
+        {"basisMode": basis, **{attack: values[attack] for attack in attack_order}}
         for basis, values in attack_f1.items()
     ]
-    write_csv(output_dir / "tables" / "attack_f1.csv", attack_rows, ["basisMode", *ATTACK_ORDER])
+    write_csv(output_dir / "tables" / "attack_f1.csv", attack_rows, ["basisMode", *attack_order])
     write_csv(
         output_dir / "tables" / "attack_metrics.csv",
         attack_metrics,
@@ -276,6 +316,30 @@ def promote(
             "favorablePairs",
             "unfavorablePairs",
             "ties",
+        ],
+    )
+    failure_rows = [
+        {
+            **{key: value for key, value in item.items() if key != "imperfectSubcorpora"},
+            "imperfectSubcorpora": json.dumps(
+                item["imperfectSubcorpora"], sort_keys=True, separators=(",", ":")
+            ),
+        }
+        for item in failure
+    ]
+    write_csv(
+        output_dir / "tables" / "failure_analysis.csv",
+        failure_rows,
+        [
+            "basisMode",
+            "attack",
+            "evaluatedImages",
+            "imperfectImageCount",
+            "perfectImageCount",
+            "minBlockF1",
+            "maxFalsePositiveBlocks",
+            "maxFalseNegativeBlocks",
+            "imperfectSubcorpora",
         ],
     )
     (output_dir / "README.md").write_text(

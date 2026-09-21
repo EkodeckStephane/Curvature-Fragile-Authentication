@@ -319,6 +319,28 @@ python scripts/promote_multicorpus_aggregate.py --scratch results\_scratch\blind
 The manuscript supplement also includes rights-safe TikZ qualitative examples
 that reproduce block-map readings without using dataset pixels.
 
+The robustness/failure-analysis aggregate that completes the current validation
+is stored in:
+
+```text
+results/blind_v2_multicorpus_robustness_v1/summary.json
+results/blind_v2_multicorpus_robustness_v1/tables/
+```
+
+It extends the five-subcorpus evaluation to eight conditions: four
+block-aligned content attacks, one non-aligned patch attack, JPEG quality 90,
+Gaussian blur with radius 0.6, and a resize round trip. The channel events are
+interpreted in the high-integrity fragile profile as invalidation events rather
+than silently tolerated benign transformations. The aggregate includes
+failure-analysis counts and remains sanitized: no pixels, per-image filenames,
+local paths or key material are stored.
+
+To regenerate this aggregate from the corresponding private scratch run:
+
+```powershell
+python scripts/promote_multicorpus_aggregate.py --scratch results\_scratch\blind_v2_multicorpus_candidate_step24_delta8_robust_v1.json --paired-csv results\_scratch\blind_v2_multicorpus_candidate_step24_delta8_robust_v1_paired\paired_comparisons.csv --output-dir results\blind_v2_multicorpus_robustness_v1 --protocol-id blind-v2-sensitive-bands-step24-delta8-alpha001-multicorpus-robustness-v1
+```
+
 The embedding allocation can also be switched:
 
 ```powershell
