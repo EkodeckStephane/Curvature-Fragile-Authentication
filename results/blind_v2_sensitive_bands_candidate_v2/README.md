@@ -49,6 +49,18 @@ Fisher-vs-fixed deltas are positive but tie-heavy on 20 evaluation images.
 Fisher clean PSNR is comparable to fixed, random, and smallest, and about
 4.94 dB above `identity_cost`.
 
+Machine-readable article tables:
+
+- `tables/attack_f1.csv`
+- `tables/clean_metrics.csv`
+- `tables/paired_attack_f1_deltas.csv`
+
+They are regenerated from `summary.json` with:
+
+```powershell
+python scripts\export_candidate_result_tables.py --input results\blind_v2_sensitive_bands_candidate_v2\summary.json --output-dir results\blind_v2_sensitive_bands_candidate_v2\tables
+```
+
 ## Conclusion
 
 Candidate v2 is the current restricted license-clean pilot result to carry
