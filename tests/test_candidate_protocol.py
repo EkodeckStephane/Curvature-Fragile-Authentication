@@ -31,16 +31,49 @@ class CandidateProtocolTests(unittest.TestCase):
         self.assertIn("random", config["basisModes"])
         self.assertIn("smallest", config["basisModes"])
 
-    def test_sensitive_bands_analysis_plan_has_no_machine_local_paths(self) -> None:
-        path = ROOT / "results" / "analysis_plans" / "blind_v2_sensitive_bands_candidate_v1.md"
-        text = path.read_text(encoding="utf-8")
+    def test_sensitive_bands_candidate_v2_fixes_delta8(self) -> None:
+        path = ROOT / "configs" / "blind_v2_sensitive_bands_candidate_v2.json"
+        config = json.loads(path.read_text(encoding="utf-8"))
 
-        self.assertIn("Blind V2 sensitive-bands candidate protocol v1", text)
-        self.assertIn("auth_feature_step = 24.0", text)
-        self.assertNotIn("C:\\Users", text)
-        self.assertNotIn("Documents\\Articles", text)
-        self.assertNotIn("masterKeyValue", text)
-        self.assertNotIn("secretKey", text)
+        self.assertEqual(config["schema"], "cfa-candidate-protocol/v1")
+        self.assertEqual(config["status"], "predeclared-candidate")
+        self.assertEqual(
+            config["protocolId"],
+            "blind-v2-sensitive-bands-step24-delta8-alpha001-v2",
+        )
+        self.assertEqual(config["candidate"]["authFeatureStep"], 24.0)
+        self.assertEqual(config["candidate"]["authFeatureMode"], "sensitive_bands")
+        self.assertEqual(config["candidate"]["authFeatureBandCount"], 3)
+        self.assertEqual(config["candidate"]["deltaEmbedCandidates"], [8.0])
+        self.assertEqual(config["candidate"]["thresholdScope"], "global")
+        self.assertEqual(config["candidate"]["targetFalsePositiveRate"], 0.01)
+        self.assertEqual(config["split"]["calibrationImagesPerSubcorpus"], 10)
+        self.assertEqual(config["split"]["evaluationImagesPerSubcorpus"], 10)
+        self.assertIn("fisher", config["basisModes"])
+        self.assertIn("identity_cost", config["basisModes"])
+
+    def test_sensitive_bands_analysis_plan_has_no_machine_local_paths(self) -> None:
+        plans = [
+            (
+                "blind_v2_sensitive_bands_candidate_v1.md",
+                "Blind V2 sensitive-bands candidate protocol v1",
+            ),
+            (
+                "blind_v2_sensitive_bands_candidate_v2.md",
+                "Blind V2 sensitive-bands candidate protocol v2",
+            ),
+        ]
+        for filename, title in plans:
+            with self.subTest(filename=filename):
+                path = ROOT / "results" / "analysis_plans" / filename
+                text = path.read_text(encoding="utf-8")
+
+                self.assertIn(title, text)
+                self.assertIn("auth_feature_step = 24.0", text)
+                self.assertNotIn("C:\\Users", text)
+                self.assertNotIn("Documents\\Articles", text)
+                self.assertNotIn("masterKeyValue", text)
+                self.assertNotIn("secretKey", text)
 
 
 if __name__ == "__main__":

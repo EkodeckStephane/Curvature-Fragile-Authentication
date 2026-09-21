@@ -271,15 +271,18 @@ selected by the local Fisher sensitivity model. This is an upstream diagnostic
 for testing whether Fisher-guided feature selection changes the tamper detector
 relative to matched basis baselines.
 
-The current predeclared candidate protocol is stored in:
+The current predeclared candidate protocols are stored in:
 
 ```text
 configs/blind_v2_sensitive_bands_candidate_v1.json
 results/analysis_plans/blind_v2_sensitive_bands_candidate_v1.md
+configs/blind_v2_sensitive_bands_candidate_v2.json
+results/analysis_plans/blind_v2_sensitive_bands_candidate_v2.md
 ```
 
-It fixes `auth-feature-step=24.0`, `auth-feature-mode=sensitive_bands` and
-`auth-feature-band-count=3` for the next license-clean validation stage.
+Both fix `auth-feature-step=24.0`, `auth-feature-mode=sensitive_bands` and
+`auth-feature-band-count=3`. Candidate v2 additionally fixes
+`delta-embed-candidates=8.0` for the next license-clean validation stage.
 
 The embedding allocation can also be switched:
 

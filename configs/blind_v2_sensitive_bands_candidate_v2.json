@@ -1,0 +1,59 @@
+{
+  "schema": "cfa-candidate-protocol/v1",
+  "protocolId": "blind-v2-sensitive-bands-step24-delta8-alpha001-v2",
+  "status": "predeclared-candidate",
+  "context": {
+    "purpose": "Evaluate a Fisher-guided authentication-feature selection rule with a fixed stronger QIM embedding strength for blind fragile image authentication.",
+    "publicDatasetManifest": "results/dataset_manifests/dtd_coco_public_pilot_v1.csv",
+    "dataPolicy": "Dataset pixels and machine-local roots remain outside version control; only manifests, summaries and provenance-safe aggregate results are candidates for promotion."
+  },
+  "runner": "scripts/run_blind_v2_real_pilot.py",
+  "inputMode": "manifest",
+  "split": {
+    "calibrationImagesPerSubcorpus": 10,
+    "evaluationImagesPerSubcorpus": 10,
+    "splitPolicy": "Use the manifest row order within each subcorpus: calibration rows first, evaluation rows next."
+  },
+  "candidate": {
+    "calibrationBasisMode": "fisher",
+    "scoreMode": "hamming",
+    "deltaMode": "constant",
+    "authFeatureStep": 24.0,
+    "authFeatureMode": "sensitive_bands",
+    "authFeatureBandCount": 3,
+    "targetFalsePositiveRate": 0.01,
+    "thresholdScope": "global",
+    "minPsnrDb": 40.0,
+    "maxCleanBitErrorRate": 0.01,
+    "deltaEmbedCandidates": [8.0]
+  },
+  "basisModes": [
+    "fisher",
+    "smallest",
+    "random",
+    "fixed",
+    "identity_cost"
+  ],
+  "attacks": [
+    "center_mean",
+    "copy_move",
+    "constant_average_block",
+    "inter_block_substitution"
+  ],
+  "primaryAnalysis": {
+    "referenceBasisMode": "fisher",
+    "pairedComparisonScript": "scripts/paired_compare_real_pilot.py",
+    "primaryMetric": "block-level F1 under each declared attack",
+    "supportivePattern": [
+      "Fisher mean attack F1 exceeds fixed, random and smallest on the declared attacks.",
+      "Fisher clean PSNR remains comparable to fixed, random and smallest.",
+      "Identity-cost results are interpreted with their clean-PSNR cost."
+    ],
+    "uncertainty": [
+      "paired bootstrap confidence intervals",
+      "sign-flip paired permutation p-values",
+      "favorable, unfavorable and tied image-pair counts"
+    ]
+  },
+  "reproductionCommandTemplate": "python scripts/run_blind_v2_real_pilot.py --manifest-csv results/dataset_manifests/dtd_coco_public_pilot_v1.csv --manifest-derived-root <local-derived-root> --output results/_scratch/blind_v2_sensitive_bands_candidate_v2.json --calibration-images-per-subcorpus 10 --evaluation-images-per-subcorpus 10 --hash-files --target-false-positive-rate 0.01 --auth-feature-step 24.0 --auth-feature-mode sensitive_bands --auth-feature-band-count 3 --delta-embed-candidates 8.0"
+}
