@@ -61,6 +61,17 @@ They are regenerated from `summary.json` with:
 python scripts\export_candidate_result_tables.py --input results\blind_v2_sensitive_bands_candidate_v2\summary.json --output-dir results\blind_v2_sensitive_bands_candidate_v2\tables
 ```
 
+Reproducible SVG figures:
+
+- `figures/attack_f1_by_mode.svg`
+- `figures/clean_metrics_by_mode.svg`
+
+They are regenerated from the CSV tables with:
+
+```powershell
+python scripts\generate_candidate_result_figures.py --input-dir results\blind_v2_sensitive_bands_candidate_v2\tables --output-dir results\blind_v2_sensitive_bands_candidate_v2\figures
+```
+
 ## Conclusion
 
 Candidate v2 is the current restricted license-clean pilot result to carry

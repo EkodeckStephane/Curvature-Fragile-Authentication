@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="520" viewBox="0 0 980 520" role="img">
+<rect width="100%" height="100%" fill="white"/>
+<text x="490.0" y="32.0" font-family="Arial, sans-serif" font-size="18" text-anchor="middle" fill="#222">Candidate v2: block-level F1 by attack</text>
+<text x="490.0" y="54.0" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#222">Restricted DTD+COCO pilot, 20 evaluation images</text>
+<line x1="88" y1="400.0" x2="950" y2="400.0" stroke="#e6e6e6"/>
+<text x="76.0" y="404.0" font-family="Arial, sans-serif" font-size="11" text-anchor="end" fill="#222">0.86</text>
+<line x1="88" y1="305.7" x2="950" y2="305.7" stroke="#e6e6e6"/>
+<text x="76.0" y="309.7" font-family="Arial, sans-serif" font-size="11" text-anchor="end" fill="#222">0.90</text>
+<line x1="88" y1="211.4" x2="950" y2="211.4" stroke="#e6e6e6"/>
+<text x="76.0" y="215.4" font-family="Arial, sans-serif" font-size="11" text-anchor="end" fill="#222">0.94</text>
+<line x1="88" y1="117.1" x2="950" y2="117.1" stroke="#e6e6e6"/>
+<text x="76.0" y="121.1" font-family="Arial, sans-serif" font-size="11" text-anchor="end" fill="#222">0.98</text>
+<line x1="88" y1="70.0" x2="950" y2="70.0" stroke="#e6e6e6"/>
+<text x="76.0" y="74.0" font-family="Arial, sans-serif" font-size="11" text-anchor="end" fill="#222">1.00</text>
+<line x1="88" y1="70" x2="88" y2="400" stroke="#444"/>
+<line x1="88" y1="400" x2="950" y2="400" stroke="#444"/>
+<rect x="105.0" y="132.9" width="32.3" height="267.1" fill="#1f77b4"/>
+<text x="121.2" y="127.9" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#222">0.973</text>
+<rect x="141.3" y="148.6" width="32.3" height="251.4" fill="#ff7f0e"/>
+<rect x="177.6" y="167.6" width="32.3" height="232.4" fill="#2ca02c"/>
+<rect x="213.9" y="172.1" width="32.3" height="227.9" fill="#8c564b"/>
+<rect x="250.2" y="220.0" width="32.3" height="180.0" fill="#9467bd"/>
+<text x="187.8" y="434.0" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="#222">Center mean</text>
+<rect x="320.5" y="132.9" width="32.3" height="267.1" fill="#1f77b4"/>
+<text x="336.6" y="127.9" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#222">0.973</text>
+<rect x="356.8" y="148.6" width="32.3" height="251.4" fill="#ff7f0e"/>
+<rect x="393.1" y="167.6" width="32.3" height="232.4" fill="#2ca02c"/>
+<rect x="429.4" y="172.1" width="32.3" height="227.9" fill="#8c564b"/>
+<rect x="465.7" y="220.0" width="32.3" height="180.0" fill="#9467bd"/>
+<text x="403.2" y="434.0" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="#222">Copy-move</text>
+<rect x="536.0" y="150.0" width="32.3" height="250.0" fill="#1f77b4"/>
+<text x="552.1" y="145.0" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#222">0.966</text>
+<rect x="572.3" y="171.0" width="32.3" height="229.0" fill="#ff7f0e"/>
+<rect x="608.6" y="193.5" width="32.3" height="206.5" fill="#2ca02c"/>
+<rect x="644.9" y="200.5" width="32.3" height="199.5" fill="#8c564b"/>
+<rect x="681.2" y="260.8" width="32.3" height="139.2" fill="#9467bd"/>
+<text x="618.8" y="434.0" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="#222">Constant avg.</text>
+<rect x="751.5" y="180.0" width="32.3" height="220.0" fill="#1f77b4"/>
+<text x="767.6" y="175.0" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#222">0.953</text>
+<rect x="787.8" y="211.4" width="32.3" height="188.6" fill="#ff7f0e"/>
+<rect x="824.1" y="238.4" width="32.3" height="161.6" fill="#2ca02c"/>
+<rect x="860.4" y="250.7" width="32.3" height="149.3" fill="#8c564b"/>
+<rect x="896.7" y="332.7" width="32.3" height="67.3" fill="#9467bd"/>
+<text x="834.2" y="434.0" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="#222">Inter-block subst.</text>
+<rect x="88.0" y="468.0" width="16.0" height="16.0" fill="#1f77b4"/>
+<text x="112.0" y="481.0" font-family="Arial, sans-serif" font-size="12" text-anchor="start" fill="#222">Fisher</text>
+<rect x="253.0" y="468.0" width="16.0" height="16.0" fill="#ff7f0e"/>
+<text x="277.0" y="481.0" font-family="Arial, sans-serif" font-size="12" text-anchor="start" fill="#222">Fixed</text>
+<rect x="418.0" y="468.0" width="16.0" height="16.0" fill="#2ca02c"/>
+<text x="442.0" y="481.0" font-family="Arial, sans-serif" font-size="12" text-anchor="start" fill="#222">Random</text>
+<rect x="583.0" y="468.0" width="16.0" height="16.0" fill="#8c564b"/>
+<text x="607.0" y="481.0" font-family="Arial, sans-serif" font-size="12" text-anchor="start" fill="#222">Identity cost</text>
+<rect x="748.0" y="468.0" width="16.0" height="16.0" fill="#9467bd"/>
+<text x="772.0" y="481.0" font-family="Arial, sans-serif" font-size="12" text-anchor="start" fill="#222">Smallest</text>
+<text x="24.0" y="235.0" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#222">F1</text>
+</svg>

@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="520" viewBox="0 0 980 520" role="img">
+<rect width="100%" height="100%" fill="white"/>
+<text x="490.0" y="32.0" font-family="Arial, sans-serif" font-size="18" text-anchor="middle" fill="#222">Candidate v2: clean-image behavior</text>
+<text x="490.0" y="54.0" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#222">Mean clean PSNR and clean flagged blocks</text>
+<line x1="84" y1="217.0" x2="946" y2="217.0" stroke="#e6e6e6"/>
+<text x="72.0" y="221.0" font-family="Arial, sans-serif" font-size="11" text-anchor="end" fill="#222">54.0</text>
+<line x1="84" y1="144.5" x2="946" y2="144.5" stroke="#e6e6e6"/>
+<text x="72.0" y="148.5" font-family="Arial, sans-serif" font-size="11" text-anchor="end" fill="#222">58.0</text>
+<line x1="84" y1="72.0" x2="946" y2="72.0" stroke="#e6e6e6"/>
+<text x="72.0" y="76.0" font-family="Arial, sans-serif" font-size="11" text-anchor="end" fill="#222">62.0</text>
+<line x1="84" y1="72" x2="84" y2="217" stroke="#444"/>
+<line x1="84" y1="217" x2="946" y2="217" stroke="#444"/>
+<rect x="118.0" y="92.6" width="106.9" height="124.4" fill="#1f77b4"/>
+<text x="171.4" y="86.6" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#222">60.86</text>
+<rect x="290.4" y="93.0" width="106.9" height="124.0" fill="#ff7f0e"/>
+<text x="343.8" y="87.0" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#222">60.84</text>
+<rect x="462.8" y="92.6" width="106.9" height="124.4" fill="#2ca02c"/>
+<text x="516.2" y="86.6" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#222">60.86</text>
+<rect x="635.2" y="92.6" width="106.9" height="124.4" fill="#9467bd"/>
+<text x="688.6" y="86.6" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#222">60.86</text>
+<rect x="807.6" y="182.3" width="106.9" height="34.7" fill="#8c564b"/>
+<text x="861.0" y="176.3" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#222">55.92</text>
+<text x="24.0" y="144.5" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#222">PSNR (dB)</text>
+<line x1="84" y1="432.0" x2="946" y2="432.0" stroke="#e6e6e6"/>
+<text x="72.0" y="436.0" font-family="Arial, sans-serif" font-size="11" text-anchor="end" fill="#222">0.0</text>
+<line x1="84" y1="359.5" x2="946" y2="359.5" stroke="#e6e6e6"/>
+<text x="72.0" y="363.5" font-family="Arial, sans-serif" font-size="11" text-anchor="end" fill="#222">6.0</text>
+<line x1="84" y1="287.0" x2="946" y2="287.0" stroke="#e6e6e6"/>
+<text x="72.0" y="291.0" font-family="Arial, sans-serif" font-size="11" text-anchor="end" fill="#222">12.0</text>
+<line x1="84" y1="287" x2="84" y2="432" stroke="#444"/>
+<line x1="84" y1="432" x2="946" y2="432" stroke="#444"/>
+<rect x="118.0" y="371.6" width="106.9" height="60.4" fill="#1f77b4"/>
+<text x="171.4" y="365.6" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#222">5</text>
+<text x="171.4" y="460.0" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="#222">Fisher</text>
+<rect x="290.4" y="359.5" width="106.9" height="72.5" fill="#ff7f0e"/>
+<text x="343.8" y="353.5" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#222">6</text>
+<text x="343.8" y="460.0" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="#222">Fixed</text>
+<rect x="462.8" y="335.3" width="106.9" height="96.7" fill="#2ca02c"/>
+<text x="516.2" y="329.3" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#222">8</text>
+<text x="516.2" y="460.0" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="#222">Random</text>
+<rect x="635.2" y="287.0" width="106.9" height="145.0" fill="#9467bd"/>
+<text x="688.6" y="281.0" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#222">12</text>
+<text x="688.6" y="460.0" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="#222">Smallest</text>
+<rect x="807.6" y="335.3" width="106.9" height="96.7" fill="#8c564b"/>
+<text x="861.0" y="329.3" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#222">8</text>
+<text x="861.0" y="460.0" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="#222">Identity cost</text>
+<text x="24.0" y="359.5" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#222">Clean flags</text>
+</svg>
