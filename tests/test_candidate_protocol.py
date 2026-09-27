@@ -103,6 +103,19 @@ class CandidateProtocolTests(unittest.TestCase):
         self.assertNotIn("masterKeyValue", serialized)
         self.assertNotIn("secretKey", serialized)
 
+    def test_multicorpus_readmes_identify_protocol_and_reverse_baseline(self) -> None:
+        candidate = (
+            ROOT / "results" / "blind_v2_multicorpus_candidate_v2" / "README.md"
+        ).read_text(encoding="utf-8")
+        robustness = (
+            ROOT / "results" / "blind_v2_multicorpus_robustness_v1" / "README.md"
+        ).read_text(encoding="utf-8")
+
+        self.assertIn("# Blind V2 multicorpus candidate v2", candidate)
+        self.assertIn("# Blind V2 multicorpus robustness v1", robustness)
+        self.assertIn("`smallest` is the reverse Fisher/cost baseline", candidate)
+        self.assertIn("`smallest` is the reverse Fisher/cost baseline", robustness)
+
 
 if __name__ == "__main__":
     unittest.main()

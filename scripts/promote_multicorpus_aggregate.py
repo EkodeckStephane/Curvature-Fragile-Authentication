@@ -19,6 +19,12 @@ DEFAULT_ATTACK_ORDER = [
 ]
 
 
+def aggregate_title(protocol_id: str) -> str:
+    if "robustness" in protocol_id:
+        return "# Blind V2 multicorpus robustness v1"
+    return "# Blind V2 multicorpus candidate v2"
+
+
 def read_csv_rows(path: Path) -> list[dict[str, str]]:
     with path.open(newline="", encoding="utf-8") as handle:
         return list(csv.DictReader(handle))
@@ -345,12 +351,15 @@ def promote(
     (output_dir / "README.md").write_text(
         "\n".join(
             [
-                "# Blind V2 multicorpus candidate v2",
+                aggregate_title(protocol_id),
                 "",
                 "Sanitized aggregate result for the FRSB detector on the local",
                 "five-subcorpus multicorpus validation. The directory stores no",
                 "pixels, no watermarked images, no attacked images, no local paths,",
                 "and no key material.",
+                "",
+                "The JSON and CSV mode named `smallest` is the reverse Fisher/cost",
+                "baseline: it uses the smallest sensitivity-per-cost ratios first.",
                 "",
                 "The evaluated subcorpora are listed in `summary.json`; each dataset",
                 "retains its original licence and terms of use. Public reproduction",
