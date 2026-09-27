@@ -1,0 +1,101 @@
+{
+  "schema": "cfa-multicorpus-provenance/v1",
+  "createdDate": "2026-09-27",
+  "linkedAggregate": "results/blind_v2_multicorpus_robustness_v1/summary.json",
+  "purpose": "Dataset-level provenance supplement for the five-subcorpus FRSB robustness aggregate.",
+  "splitPolicy": {
+    "description": "Each subcorpus contributes 8 calibration images and 8 evaluation images to the promoted robustness aggregate. Calibration images set the global clean threshold; evaluation images are watermarked, attacked, and scored under common detector parameters.",
+    "calibrationImagesTotal": 40,
+    "evaluationImagesTotal": 40,
+    "calibrationImagesPerSubcorpus": 8,
+    "evaluationImagesPerSubcorpus": 8,
+    "imageIdentityPublication": "Image-level identities for the five-subcorpus robustness aggregate are retained in a private local map because source datasets retain their original terms. This public manifest publishes dataset-level source, version, citation, reuse-status, counts, and non-redistribution policy only."
+  },
+  "safety": {
+    "pixelsStored": false,
+    "watermarkedImagesStored": false,
+    "attackedImagesStored": false,
+    "imageDerivativesStored": false,
+    "localPathsStored": false,
+    "perImageFileNamesStored": false,
+    "secretKeyMaterialStored": false
+  },
+  "subcorpora": [
+    {
+      "subcorpus": "bossbase_1_01",
+      "datasetName": "BOSSBase 1.01",
+      "sourceUrl": "https://dde.binghamton.edu/download/",
+      "sourceVersion": "BOSSbase 1.01",
+      "citationKey": "bas2011boss",
+      "citation": "P. Bas, T. Filler, and T. Pevny, 'Break Our Steganographic System': The ins and outs of organizing BOSS, Information Hiding, 2011, doi:10.1007/978-3-642-24178-9_5.",
+      "reuseOrLicenseStatus": "Public Binghamton DDE download page lists BOSSbase 1.01 as 10000 grayscale BOSS competition images; no explicit redistribution license was located in this pass.",
+      "identityStatus": "Private identity map recovered 30/30 local records; image-level identities are not published in this manifest.",
+      "selectedImages": {"calibration": 8, "evaluation": 8, "total": 16},
+      "redistributionPolicy": "Aggregate metrics and dataset-level metadata only; pixels are not redistributed; obtain pixels from upstream source under its terms.",
+      "submissionDecision": "include-with-restrictions"
+    },
+    {
+      "subcorpus": "bows_2",
+      "datasetName": "BOWS-2",
+      "sourceUrl": "https://signalprocessingsociety.org/publications-resources/data-challenges/break-our-watermarking-system-2nd-ed",
+      "sourceVersion": "BOWS-2 challenge 2007-2008",
+      "citationKey": "bows2online",
+      "citation": "IEEE Signal Processing Society, Break Our Watermarking System--2nd ed., 2010.",
+      "reuseOrLicenseStatus": "Official SPS challenge page identifies BOWS-2 and historic challenge URL; no explicit image redistribution license was located in this pass.",
+      "identityStatus": "Private identity map recovered 30/30 local records; image-level identities are not published in this manifest.",
+      "selectedImages": {"calibration": 8, "evaluation": 8, "total": 16},
+      "redistributionPolicy": "Aggregate metrics and dataset-level metadata only; pixels are not redistributed; obtain pixels from upstream source under its terms.",
+      "submissionDecision": "include-with-restrictions"
+    },
+    {
+      "subcorpus": "dtd_textures",
+      "datasetName": "Describable Textures Dataset",
+      "sourceUrl": "https://www.robots.ox.ac.uk/~vgg/data/dtd/",
+      "sourceVersion": "dtd-r1.0.1",
+      "citationKey": "cimpoi2014dtd",
+      "citation": "M. Cimpoi, S. Maji, I. Kokkinos, S. Mohamed, and A. Vedaldi, Describing Textures in the Wild, CVPR, 2014, doi:10.1109/CVPR.2014.461.",
+      "reuseOrLicenseStatus": "Official DTD page states the data are made available to the computer vision community for research purposes.",
+      "identityStatus": "Private identity map recovered 20/20 local records; restricted DTD+COCO manifest publishes DTD identities for a separate public pilot.",
+      "selectedImages": {"calibration": 8, "evaluation": 8, "total": 16},
+      "redistributionPolicy": "Aggregate metrics and dataset-level metadata only; pixels are not redistributed; obtain pixels from official DTD source.",
+      "submissionDecision": "include-with-research-use-restriction"
+    },
+    {
+      "subcorpus": "inria_holidays",
+      "datasetName": "INRIA Holidays",
+      "sourceUrl": "https://lear.inrialpes.fr/~jegou/data.php#holidays",
+      "sourceVersion": "INRIA Holidays 1491-image benchmark",
+      "citationKey": "jegou2008hamming",
+      "citation": "H. Jegou, M. Douze, and C. Schmid, Hamming embedding and weak geometric consistency for large scale image search, ECCV, 2008, doi:10.1007/978-3-540-88682-2_24.",
+      "reuseOrLicenseStatus": "Official/author dataset page is used as source evidence; no explicit redistribution license was located in this pass.",
+      "identityStatus": "Private identity map recovered 20/20 local records; image-level identities are not published in this manifest.",
+      "selectedImages": {"calibration": 8, "evaluation": 8, "total": 16},
+      "redistributionPolicy": "Aggregate metrics and dataset-level metadata only; pixels are not redistributed; obtain pixels from upstream source under its terms.",
+      "submissionDecision": "include-with-restrictions"
+    },
+    {
+      "subcorpus": "ms_coco_val2017",
+      "datasetName": "MS-COCO val2017",
+      "sourceUrl": "https://cocodataset.org/",
+      "sourceVersion": "val2017",
+      "citationKey": "lin2014coco",
+      "citation": "T.-Y. Lin et al., Microsoft COCO: Common Objects in Context, ECCV, 2014, doi:10.1007/978-3-319-10602-1_48.",
+      "reuseOrLicenseStatus": "Official COCO source and annotation metadata provide image-level license IDs.",
+      "identityStatus": "Private identity map recovered 20/20 local records with COCO IDs and license metadata; restricted DTD+COCO manifest publishes COCO identities for a separate public pilot.",
+      "selectedImages": {"calibration": 8, "evaluation": 8, "total": 16},
+      "redistributionPolicy": "Aggregate metrics and dataset-level metadata only; pixels are not redistributed; obtain pixels from official COCO source under per-image terms.",
+      "submissionDecision": "include-with-per-image-license-restriction"
+    }
+  ],
+  "sourcesChecked": [
+    "https://dde.binghamton.edu/download/",
+    "https://signalprocessingsociety.org/publications-resources/data-challenges/break-our-watermarking-system-2nd-ed",
+    "https://www.robots.ox.ac.uk/~vgg/data/dtd/",
+    "https://lear.inrialpes.fr/~jegou/data.php#holidays",
+    "https://cocodataset.org/",
+    "https://doi.org/10.1007/978-3-642-24178-9_5",
+    "https://doi.org/10.1109/CVPR.2014.461",
+    "https://doi.org/10.1007/978-3-540-88682-2_24",
+    "https://doi.org/10.1007/978-3-319-10602-1_48"
+  ]
+}
