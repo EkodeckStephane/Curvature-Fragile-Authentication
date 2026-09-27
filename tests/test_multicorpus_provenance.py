@@ -19,14 +19,14 @@ class MulticorpusProvenanceTests(unittest.TestCase):
         self.assertEqual(data["schema"], "cfa-multicorpus-provenance/v1")
         self.assertEqual(
             data["linkedAggregate"],
-            "results/blind_v2_multicorpus_robustness_v1/summary.json",
+            "results/blind_v2_multicorpus_expanded_v1/summary.json",
         )
         self.assertFalse(data["safety"]["pixelsStored"])
         self.assertFalse(data["safety"]["localPathsStored"])
         self.assertFalse(data["safety"]["perImageFileNamesStored"])
         self.assertFalse(data["safety"]["secretKeyMaterialStored"])
-        self.assertEqual(data["splitPolicy"]["calibrationImagesPerSubcorpus"], 8)
-        self.assertEqual(data["splitPolicy"]["evaluationImagesPerSubcorpus"], 8)
+        self.assertEqual(data["splitPolicy"]["calibrationImagesPerSubcorpus"], 10)
+        self.assertEqual(data["splitPolicy"]["evaluationImagesPerSubcorpus"], 10)
 
         subcorpora = {item["subcorpus"]: item for item in data["subcorpora"]}
         self.assertEqual(
@@ -45,8 +45,8 @@ class MulticorpusProvenanceTests(unittest.TestCase):
             self.assertTrue(item["citationKey"])
             self.assertTrue(item["citation"])
             self.assertTrue(item["reuseOrLicenseStatus"])
-            self.assertEqual(item["selectedImages"]["calibration"], 8)
-            self.assertEqual(item["selectedImages"]["evaluation"], 8)
+            self.assertEqual(item["selectedImages"]["calibration"], 10)
+            self.assertEqual(item["selectedImages"]["evaluation"], 10)
             self.assertIn("not redistributed", item["redistributionPolicy"])
 
         forbidden = [
@@ -77,8 +77,8 @@ class MulticorpusProvenanceTests(unittest.TestCase):
             self.assertTrue(row["source_version"])
             self.assertTrue(row["citation_key"])
             self.assertTrue(row["reuse_or_license_status"])
-            self.assertEqual(row["calibration_images"], "8")
-            self.assertEqual(row["evaluation_images"], "8")
+            self.assertEqual(row["calibration_images"], "10")
+            self.assertEqual(row["evaluation_images"], "10")
 
 
 if __name__ == "__main__":

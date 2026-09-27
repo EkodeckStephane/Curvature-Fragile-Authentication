@@ -127,7 +127,7 @@ The raw API records, downloaded papers, and reading notes remain local. The
 non-sensitive run summary and response hashes are published under
 `results/sota/`. Re-running the PDF inventory preserves review metadata only
 when both the relative path and SHA-256 are unchanged; a replaced file is reset
-to the unverified state.
+to a pending-review state.
 
 ### Verify the current source tools
 
@@ -295,25 +295,34 @@ It reports aggregate metrics over the restricted DTD+COCO manifest; pixels,
 local paths, image derivatives and secret key material stay outside version
 control.
 
-The promoted five-subcorpus multicorpus aggregate used by the current TIFS
+The promoted five-subcorpus multicorpus aggregate used by the current
 manuscript is stored in:
 
 ```text
-results/blind_v2_multicorpus_candidate_v2/summary.json
-results/blind_v2_multicorpus_candidate_v2/tables/
-results/blind_v2_multicorpus_candidate_v2/README.md
+results/blind_v2_multicorpus_expanded_v1/summary.json
+results/blind_v2_multicorpus_expanded_v1/tables/
+results/blind_v2_multicorpus_expanded_v1/README.md
+results/frsb_lsb_hmac_external_comparison_v1/summary.json
+results/frsb_lsb_hmac_external_comparison_v1/tables/
 ```
 
 It covers BOSSBase 1.01, BOWS-2, DTD textures, INRIA Holidays and MS-COCO
-val2017 with 40 calibration and 40 evaluation images, four deterministic
-attacks and four matched baselines. It is a sanitized aggregate: no pixels,
-watermarked images, attacked images, per-image filenames, local paths or secret
-key material are published.
+val2017 with 50 calibration and 50 evaluation images, four block-aligned
+content attacks, one non-aligned patch, three high-integrity channel events and
+four matched transform-basis baselines. The external-comparison directory adds
+a targeted block-wise LSB-HMAC fragile-watermark baseline. These are sanitized
+aggregates: no pixels, watermarked images, attacked images, per-image
+filenames, local paths or secret key material are published.
 
-To regenerate the sanitized multicorpus aggregate from a private scratch run:
+To regenerate the sanitized expanded multicorpus aggregate from a private
+scratch run:
 
 ```powershell
-python scripts/promote_multicorpus_aggregate.py --scratch results\_scratch\blind_v2_multicorpus_candidate_step24_delta8_fivemode_v1.json --paired-csv results\_scratch\blind_v2_multicorpus_candidate_step24_delta8_fivemode_v1_paired\paired_comparisons.csv --output-dir results\blind_v2_multicorpus_candidate_v2 --protocol-id blind-v2-sensitive-bands-step24-delta8-alpha001-multicorpus-v2
+python scripts\run_blind_v2_real_pilot.py --root path\to\multicorpus_v1_0 --output results\_scratch\blind_v2_multicorpus_expanded_10x10_robust_v1.json --calibration-images-per-subcorpus 10 --evaluation-images-per-subcorpus 10 --target-false-positive-rate 0.01 --auth-feature-step 24.0 --auth-feature-mode sensitive_bands --auth-feature-band-count 3 --delta-embed-candidates 8.0
+python scripts\paired_compare_real_pilot.py --input results\_scratch\blind_v2_multicorpus_expanded_10x10_robust_v1.json --output-dir results\_scratch\blind_v2_multicorpus_expanded_10x10_robust_v1_paired
+python scripts\promote_multicorpus_aggregate.py --scratch results\_scratch\blind_v2_multicorpus_expanded_10x10_robust_v1.json --paired-csv results\_scratch\blind_v2_multicorpus_expanded_10x10_robust_v1_paired\paired_comparisons.csv --output-dir results\blind_v2_multicorpus_expanded_v1 --protocol-id blind-v2-sensitive-bands-step24-delta8-alpha001-multicorpus-expanded-v1
+python scripts\run_lsb_hmac_baseline.py --root path\to\multicorpus_v1_0 --output results\_scratch\lsb_hmac_multicorpus_expanded_10x10_v1.json --calibration-images-per-subcorpus 10 --evaluation-images-per-subcorpus 10
+python scripts\promote_external_comparison.py --frsb results\_scratch\blind_v2_multicorpus_expanded_10x10_robust_v1.json --external results\_scratch\lsb_hmac_multicorpus_expanded_10x10_v1.json --output-dir results\frsb_lsb_hmac_external_comparison_v1
 ```
 
 The manuscript supplement also includes rights-safe TikZ qualitative examples

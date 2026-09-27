@@ -1,0 +1,133 @@
+{
+  "schema": "frsb-external-comparison/v1",
+  "status": "promoted-aggregate-result",
+  "comparison": "FRSB Fisher basis versus external block-wise LSB-HMAC fragile watermark baseline",
+  "safety": {
+    "pixelsStored": false,
+    "localPathsStored": false,
+    "perImageFileNamesStored": false,
+    "masterKeyStored": false
+  },
+  "dataset": {
+    "scope": "five-subcorpus local multicorpus expanded validation",
+    "calibrationImages": 50,
+    "evaluationImages": 50,
+    "subcorpora": [
+      "bossbase_1_01",
+      "bows_2",
+      "dtd_textures",
+      "inria_holidays",
+      "ms_coco_val2017"
+    ]
+  },
+  "externalBaseline": {
+    "citationKey": "wong2001secret",
+    "doi": "10.1109/83.951543",
+    "note": "External family baseline inspired by block-wise fragile authentication watermarks; this implementation uses HMAC-SHA256 rather than reproducing a specific paper exactly."
+  },
+  "cleanComparison": {
+    "fisherMeanCleanPsnrDb": 60.864999,
+    "externalMeanCleanPsnrDb": 66.183187,
+    "deltaFisherMinusExternalPsnrDb": -5.318189,
+    "fisherCleanFlaggedBlockCount": 12,
+    "externalCleanFlaggedBlockCount": 0
+  },
+  "attackComparison": [
+    {
+      "attack": "center_mean",
+      "fisherMeanBlockF1": 0.970921,
+      "externalMeanBlockF1": 0.991429,
+      "deltaFisherMinusExternalF1": -0.020508,
+      "fisherMeanBlockIoU": 0.948333,
+      "externalMeanBlockIoU": 0.985,
+      "fisherMeanBlockFpr": 0.000388,
+      "externalMeanBlockFpr": 0.0,
+      "fisherMeanBlockFnr": 0.005,
+      "externalMeanBlockFnr": 0.015
+    },
+    {
+      "attack": "copy_move",
+      "fisherMeanBlockF1": 0.973778,
+      "externalMeanBlockF1": 1.0,
+      "deltaFisherMinusExternalF1": -0.026222,
+      "fisherMeanBlockIoU": 0.953333,
+      "externalMeanBlockIoU": 1.0,
+      "fisherMeanBlockFpr": 0.000388,
+      "externalMeanBlockFpr": 0.0,
+      "fisherMeanBlockFnr": 0.0,
+      "externalMeanBlockFnr": 0.0
+    },
+    {
+      "attack": "constant_average_block",
+      "fisherMeanBlockF1": 0.966429,
+      "externalMeanBlockF1": 0.988,
+      "deltaFisherMinusExternalF1": -0.021571,
+      "fisherMeanBlockIoU": 0.942,
+      "externalMeanBlockIoU": 0.98,
+      "fisherMeanBlockFpr": 0.000387,
+      "externalMeanBlockFpr": 0.0,
+      "fisherMeanBlockFnr": 0.0,
+      "externalMeanBlockFnr": 0.02
+    },
+    {
+      "attack": "inter_block_substitution",
+      "fisherMeanBlockF1": 0.940667,
+      "externalMeanBlockF1": 1.0,
+      "deltaFisherMinusExternalF1": -0.059333,
+      "fisherMeanBlockIoU": 0.906667,
+      "externalMeanBlockIoU": 1.0,
+      "fisherMeanBlockFpr": 0.000386,
+      "externalMeanBlockFpr": 0.0,
+      "fisherMeanBlockFnr": 0.02,
+      "externalMeanBlockFnr": 0.0
+    },
+    {
+      "attack": "non_aligned_patch",
+      "fisherMeanBlockF1": 0.992933,
+      "externalMeanBlockF1": 0.997745,
+      "deltaFisherMinusExternalF1": -0.004812,
+      "fisherMeanBlockIoU": 0.986298,
+      "externalMeanBlockIoU": 0.995611,
+      "fisherMeanBlockFpr": 0.000399,
+      "externalMeanBlockFpr": 0.0,
+      "fisherMeanBlockFnr": 0.003556,
+      "externalMeanBlockFnr": 0.004389
+    },
+    {
+      "attack": "channel_jpeg_q90",
+      "fisherMeanBlockF1": 0.995992,
+      "externalMeanBlockF1": 0.997894,
+      "deltaFisherMinusExternalF1": -0.001902,
+      "fisherMeanBlockIoU": 0.992025,
+      "externalMeanBlockIoU": 0.995802,
+      "fisherMeanBlockFpr": 0.0,
+      "externalMeanBlockFpr": 0.0,
+      "fisherMeanBlockFnr": 0.007975,
+      "externalMeanBlockFnr": 0.004198
+    },
+    {
+      "attack": "channel_blur_sigma0_6",
+      "fisherMeanBlockF1": 0.982153,
+      "externalMeanBlockF1": 0.875926,
+      "deltaFisherMinusExternalF1": 0.106227,
+      "fisherMeanBlockIoU": 0.965539,
+      "externalMeanBlockIoU": 0.808835,
+      "fisherMeanBlockFpr": 0.0,
+      "externalMeanBlockFpr": 0.0,
+      "fisherMeanBlockFnr": 0.034461,
+      "externalMeanBlockFnr": 0.191165
+    },
+    {
+      "attack": "channel_resize_roundtrip",
+      "fisherMeanBlockF1": 0.989936,
+      "externalMeanBlockF1": 0.996019,
+      "deltaFisherMinusExternalF1": -0.006084,
+      "fisherMeanBlockIoU": 0.980195,
+      "externalMeanBlockIoU": 0.992143,
+      "fisherMeanBlockFpr": 0.0,
+      "externalMeanBlockFpr": 0.0,
+      "fisherMeanBlockFnr": 0.019805,
+      "externalMeanBlockFnr": 0.007857
+    }
+  ]
+}

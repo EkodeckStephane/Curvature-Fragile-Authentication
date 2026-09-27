@@ -1,0 +1,9 @@
+attack,fisherMeanBlockF1,externalMeanBlockF1,deltaFisherMinusExternalF1,fisherMeanBlockIoU,externalMeanBlockIoU,fisherMeanBlockFpr,externalMeanBlockFpr,fisherMeanBlockFnr,externalMeanBlockFnr
+center_mean,0.970921,0.991429,-0.020508,0.948333,0.985,0.000388,0.0,0.005,0.015
+copy_move,0.973778,1.0,-0.026222,0.953333,1.0,0.000388,0.0,0.0,0.0
+constant_average_block,0.966429,0.988,-0.021571,0.942,0.98,0.000387,0.0,0.0,0.02
+inter_block_substitution,0.940667,1.0,-0.059333,0.906667,1.0,0.000386,0.0,0.02,0.0
+non_aligned_patch,0.992933,0.997745,-0.004812,0.986298,0.995611,0.000399,0.0,0.003556,0.004389
+channel_jpeg_q90,0.995992,0.997894,-0.001902,0.992025,0.995802,0.0,0.0,0.007975,0.004198
+channel_blur_sigma0_6,0.982153,0.875926,0.106227,0.965539,0.808835,0.0,0.0,0.034461,0.191165
+channel_resize_roundtrip,0.989936,0.996019,-0.006084,0.980195,0.992143,0.0,0.0,0.019805,0.007857

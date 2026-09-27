@@ -20,6 +20,8 @@ DEFAULT_ATTACK_ORDER = [
 
 
 def aggregate_title(protocol_id: str) -> str:
+    if "expanded" in protocol_id:
+        return "# Blind V2 multicorpus expanded v1"
     if "robustness" in protocol_id:
         return "# Blind V2 multicorpus robustness v1"
     return "# Blind V2 multicorpus candidate v2"

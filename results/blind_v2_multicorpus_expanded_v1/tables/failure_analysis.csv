@@ -1,0 +1,9 @@
+basisMode,attack,evaluatedImages,imperfectImageCount,perfectImageCount,minBlockF1,maxFalsePositiveBlocks,maxFalseNegativeBlocks,imperfectSubcorpora
+fisher,center_mean,50,12,38,0.8,2,1,"{""bossbase_1_01"":2,""bows_2"":1,""dtd_textures"":6,""inria_holidays"":2,""ms_coco_val2017"":1}"
+fisher,copy_move,50,11,39,0.8,2,0,"{""bossbase_1_01"":2,""bows_2"":1,""dtd_textures"":6,""inria_holidays"":2}"
+fisher,constant_average_block,50,11,39,0.75,2,0,"{""bossbase_1_01"":2,""bows_2"":1,""dtd_textures"":6,""inria_holidays"":2}"
+fisher,inter_block_substitution,50,12,38,0.5,2,1,"{""bossbase_1_01"":2,""bows_2"":1,""dtd_textures"":6,""inria_holidays"":2,""ms_coco_val2017"":1}"
+fisher,non_aligned_patch,50,15,35,0.941176,2,1,"{""bossbase_1_01"":3,""bows_2"":2,""dtd_textures"":6,""inria_holidays"":4}"
+fisher,channel_jpeg_q90,50,49,1,0.990138,0,15,"{""bossbase_1_01"":10,""bows_2"":10,""dtd_textures"":9,""inria_holidays"":10,""ms_coco_val2017"":10}"
+fisher,channel_blur_sigma0_6,50,50,0,0.924934,0,143,"{""bossbase_1_01"":10,""bows_2"":10,""dtd_textures"":10,""inria_holidays"":10,""ms_coco_val2017"":10}"
+fisher,channel_resize_roundtrip,50,50,0,0.969819,0,60,"{""bossbase_1_01"":10,""bows_2"":10,""dtd_textures"":10,""inria_holidays"":10,""ms_coco_val2017"":10}"

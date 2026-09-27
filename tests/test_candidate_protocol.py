@@ -1,11 +1,24 @@
 from __future__ import annotations
 
 import json
+import importlib.util
+import sys
 import unittest
 from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def load_promoter():
+    path = ROOT / "scripts" / "promote_multicorpus_aggregate.py"
+    spec = importlib.util.spec_from_file_location("promote_multicorpus_aggregate", path)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"cannot import {path}")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules["promote_multicorpus_aggregate"] = module
+    spec.loader.exec_module(module)
+    return module
 
 
 class CandidateProtocolTests(unittest.TestCase):
@@ -104,6 +117,7 @@ class CandidateProtocolTests(unittest.TestCase):
         self.assertNotIn("secretKey", serialized)
 
     def test_multicorpus_readmes_identify_protocol_and_reverse_baseline(self) -> None:
+        promoter = load_promoter()
         candidate = (
             ROOT / "results" / "blind_v2_multicorpus_candidate_v2" / "README.md"
         ).read_text(encoding="utf-8")
@@ -111,10 +125,43 @@ class CandidateProtocolTests(unittest.TestCase):
             ROOT / "results" / "blind_v2_multicorpus_robustness_v1" / "README.md"
         ).read_text(encoding="utf-8")
 
+        self.assertEqual(
+            promoter.aggregate_title("blind-v2-multicorpus-expanded-v1"),
+            "# Blind V2 multicorpus expanded v1",
+        )
         self.assertIn("# Blind V2 multicorpus candidate v2", candidate)
         self.assertIn("# Blind V2 multicorpus robustness v1", robustness)
         self.assertIn("`smallest` is the reverse Fisher/cost baseline", candidate)
         self.assertIn("`smallest` is the reverse Fisher/cost baseline", robustness)
+
+    def test_expanded_multicorpus_and_external_comparison_are_sanitized(self) -> None:
+        expanded_path = ROOT / "results" / "blind_v2_multicorpus_expanded_v1" / "summary.json"
+        external_path = (
+            ROOT / "results" / "frsb_lsb_hmac_external_comparison_v1" / "summary.json"
+        )
+        expanded = json.loads(expanded_path.read_text(encoding="utf-8"))
+        external = json.loads(external_path.read_text(encoding="utf-8"))
+        serialized = json.dumps({"expanded": expanded, "external": external})
+
+        self.assertEqual(expanded["schema"], "blind-v2-promoted-aggregate-result/v1")
+        self.assertEqual(expanded["dataset"]["calibrationImages"], 50)
+        self.assertEqual(expanded["dataset"]["evaluationImages"], 50)
+        self.assertEqual(
+            expanded["protocolId"],
+            "blind-v2-sensitive-bands-step24-delta8-alpha001-multicorpus-expanded-v1",
+        )
+        self.assertEqual(external["schema"], "frsb-external-comparison/v1")
+        self.assertEqual(external["dataset"]["evaluationImages"], 50)
+        self.assertEqual(
+            external["externalBaseline"]["doi"],
+            "10.1109/83.951543",
+        )
+        self.assertFalse(expanded["safety"]["pixelsStored"])
+        self.assertFalse(external["safety"]["pixelsStored"])
+        self.assertNotIn("C:\\Users", serialized)
+        self.assertNotIn("Documents\\Articles", serialized)
+        self.assertNotIn("masterKeyValue", serialized)
+        self.assertNotIn("secretKeyValue", serialized)
 
 
 if __name__ == "__main__":
