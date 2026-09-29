@@ -20,6 +20,8 @@ DEFAULT_ATTACK_ORDER = [
 
 
 def aggregate_title(protocol_id: str) -> str:
+    if "1000eval" in protocol_id:
+        return "# Blind V2 multicorpus 1000-evaluation v1"
     if "expanded" in protocol_id:
         return "# Blind V2 multicorpus expanded v1"
     if "robustness" in protocol_id:
@@ -257,9 +259,12 @@ def promote(
         "pairedAttackF1Deltas": paired,
         "failureAnalysis": failure,
         "interpretation": {
-            "primaryPattern": "Fisher has the highest mean block-level F1 among the five declared basis modes on the four content-tamper attacks and remains near the top on the high-integrity channel events.",
+            "primaryPattern": "Fisher remains competitive with the matched transform-basis ablations on content tampering and gives clear channel-event gains over identity-cost under the selected operating point.",
             "baselineBreadth": "The comparison uses four matched baselines: reverse Fisher/cost, random, fixed, and identity-cost.",
-            "datasetBreadth": "The evaluation covers five subcorpora with 40 calibration and 40 evaluation images.",
+            "datasetBreadth": (
+                f"The evaluation covers five subcorpora with {scratch['calibrationImageCount']} "
+                f"calibration and {scratch['evaluationImageCount']} evaluation images."
+            ),
             "quality": "Fisher clean PSNR is comparable to fixed, random and reverse Fisher/cost, and higher than identity-cost under the selected operating point.",
             "highIntegrityReading": "Benign transformations are treated as operational channel events that should trigger reauthentication or be evaluated in a separate semi-fragile profile, not as silently tolerated modifications in the fragile profile.",
         },

@@ -36,7 +36,7 @@ It contains no dataset pixels, attacked images, watermarked images, or local
 machine paths.
 
 `multicorpus_provenance_v1.csv` and `multicorpus_provenance_v1.json` cover the
-five subcorpora used by `results/blind_v2_multicorpus_expanded_v1/`: BOSSBase
+five subcorpora used by `results/blind_v2_multicorpus_1000eval_v1/`: BOSSBase
 1.01, BOWS-2, DTD textures, INRIA Holidays, and MS-COCO val2017. These files
 are dataset-level provenance records. They intentionally avoid per-image
 filenames for the five-subcorpus aggregate because each source dataset retains

@@ -1,0 +1,6 @@
+basisMode,tau,validationFalsePositiveRate,cleanFlaggedBlockCount,meanCleanPsnrDb,minCleanPsnrDb,maxCleanBitErrorRate
+fisher,0.0,0.000542,420,60.85997,60.625042,0.014323
+smallest,0.0,0.000543,432,60.859524,60.643066,0.014323
+random,0.0,0.000576,415,60.856975,60.59754,0.014323
+fixed,0.0,0.000551,411,60.862114,60.620068,0.014323
+identity_cost,0.0,0.000527,439,55.914707,55.692634,0.014323

@@ -1,0 +1,9 @@
+basisMode,attack,evaluatedImages,imperfectImageCount,perfectImageCount,minBlockF1,maxFalsePositiveBlocks,maxFalseNegativeBlocks,imperfectSubcorpora
+fisher,center_mean,1000,303,697,0.258065,23,1,"{""bossbase_1_01"":53,""bows_2"":20,""dtd_textures"":99,""inria_holidays"":62,""ms_coco_val2017"":69}"
+fisher,copy_move,1000,297,703,0.258065,23,1,"{""bossbase_1_01"":54,""bows_2"":21,""dtd_textures"":98,""inria_holidays"":62,""ms_coco_val2017"":62}"
+fisher,constant_average_block,1000,293,707,0.206897,23,0,"{""bossbase_1_01"":53,""bows_2"":20,""dtd_textures"":97,""inria_holidays"":62,""ms_coco_val2017"":61}"
+fisher,inter_block_substitution,1000,300,700,0.148148,23,1,"{""bossbase_1_01"":54,""bows_2"":20,""dtd_textures"":99,""inria_holidays"":64,""ms_coco_val2017"":63}"
+fisher,non_aligned_patch,1000,375,625,0.722892,23,7,"{""bossbase_1_01"":77,""bows_2"":38,""dtd_textures"":109,""inria_holidays"":83,""ms_coco_val2017"":68}"
+fisher,channel_jpeg_q90,1000,945,55,0.986139,0,17,"{""bossbase_1_01"":199,""bows_2"":162,""dtd_textures"":190,""inria_holidays"":198,""ms_coco_val2017"":196}"
+fisher,channel_blur_sigma0_6,1000,977,23,0.907733,0,173,"{""bossbase_1_01"":199,""bows_2"":187,""dtd_textures"":194,""inria_holidays"":199,""ms_coco_val2017"":198}"
+fisher,channel_resize_roundtrip,1000,978,22,0.95243,0,93,"{""bossbase_1_01"":200,""bows_2"":187,""dtd_textures"":191,""inria_holidays"":200,""ms_coco_val2017"":200}"

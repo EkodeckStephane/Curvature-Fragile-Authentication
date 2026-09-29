@@ -129,29 +129,33 @@ class CandidateProtocolTests(unittest.TestCase):
             promoter.aggregate_title("blind-v2-multicorpus-expanded-v1"),
             "# Blind V2 multicorpus expanded v1",
         )
+        self.assertEqual(
+            promoter.aggregate_title("blind-v2-multicorpus-1000eval-v1"),
+            "# Blind V2 multicorpus 1000-evaluation v1",
+        )
         self.assertIn("# Blind V2 multicorpus candidate v2", candidate)
         self.assertIn("# Blind V2 multicorpus robustness v1", robustness)
         self.assertIn("`smallest` is the reverse Fisher/cost baseline", candidate)
         self.assertIn("`smallest` is the reverse Fisher/cost baseline", robustness)
 
-    def test_expanded_multicorpus_and_external_comparison_are_sanitized(self) -> None:
-        expanded_path = ROOT / "results" / "blind_v2_multicorpus_expanded_v1" / "summary.json"
+    def test_1000eval_multicorpus_and_external_comparison_are_sanitized(self) -> None:
+        expanded_path = ROOT / "results" / "blind_v2_multicorpus_1000eval_v1" / "summary.json"
         external_path = (
-            ROOT / "results" / "frsb_lsb_hmac_external_comparison_v1" / "summary.json"
+            ROOT / "results" / "frsb_lsb_hmac_external_comparison_v2" / "summary.json"
         )
         expanded = json.loads(expanded_path.read_text(encoding="utf-8"))
         external = json.loads(external_path.read_text(encoding="utf-8"))
         serialized = json.dumps({"expanded": expanded, "external": external})
 
         self.assertEqual(expanded["schema"], "blind-v2-promoted-aggregate-result/v1")
-        self.assertEqual(expanded["dataset"]["calibrationImages"], 50)
-        self.assertEqual(expanded["dataset"]["evaluationImages"], 50)
+        self.assertEqual(expanded["dataset"]["calibrationImages"], 1000)
+        self.assertEqual(expanded["dataset"]["evaluationImages"], 1000)
         self.assertEqual(
             expanded["protocolId"],
-            "blind-v2-sensitive-bands-step24-delta8-alpha001-multicorpus-expanded-v1",
+            "blind-v2-sensitive-bands-step24-delta8-alpha001-multicorpus-1000eval-v1",
         )
         self.assertEqual(external["schema"], "frsb-external-comparison/v1")
-        self.assertEqual(external["dataset"]["evaluationImages"], 50)
+        self.assertEqual(external["dataset"]["evaluationImages"], 1000)
         self.assertEqual(
             external["externalBaseline"]["doi"],
             "10.1109/83.951543",
